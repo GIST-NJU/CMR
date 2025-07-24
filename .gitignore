@@ -4,3 +4,11 @@ models/*/
 !models/.gitkeep
 models/*/
 !models/.gitkeep
+results/errors/**
+!results/errors/.gitkeep
+results/features/**
+!results/features/.gitkeep
+results/predictions/**
+!results/predictions/.gitkeep
+results/SelfOracle/**
+!results/SelfOracle/.gitkeep
