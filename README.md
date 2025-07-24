@@ -2,8 +2,22 @@
 
 This repository provides code and data for our paper.
 
-## 📂 Source Test Inputs
+## 📦Resources
 
-The source test inputs used in our experiments can be downloaded from the following link:
+Software Under Test 👉 [Download Link](https://drive.google.com/drive/folders/1NuqC7TWKETkqgR4T_-GnOnTo1yzFQr7h?usp=drive_link)
+Source Test Input Set 👉 [Download Link]()
+Predictions 👉 [Download Link]()
+SelfOracle 👉 [Download Link]()
 
-👉 [Download Link](https://drive.google.com/drive/folders/1NuqC7TWKETkqgR4T_-GnOnTo1yzFQr7h?usp=drive_link)
+
+## 🛠️Usage
+
+1. Generate follow-up test inputs
+
+2. Identify valid test inputs
+
+
+3. Make predictions
+
+
+4. Compute the results for RQs
