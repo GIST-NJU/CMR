@@ -2,8 +2,8 @@ data/*/
 !data/.gitkeep
 models/*/
 !models/.gitkeep
-models/*/
-!models/.gitkeep
+followup/*/
+!followup/.gitkeep
 results/errors/**
 !results/errors/.gitkeep
 results/features/**
