@@ -38,7 +38,7 @@ All MRs for composition are implemented in `src/mr_utils.py`
     python selforacle.py --dataset MNIST --strength 2
 3. Make predictions
     ```bash
-    python predict.py --dataset MNIST --source # test source
+    python predict.py --dataset MNIST --source True # test source
     python predict.py --dataset MNIST --source False --strength 2 # test followup
 4. Compute the results for RQs
     ```bash
