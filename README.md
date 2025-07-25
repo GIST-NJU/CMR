@@ -26,6 +26,8 @@ This repository provides code and data for our paper.
 | Failure / Fault | [Download](https://www.dropbox.com/scl/fo/djz19v7z6zevl7rl0gewr/ALmhuzP_NqHgkvYJsxZ1E1A?rlkey=0h1zhzqovcerion5egpmlmtew&dl=0) | `results/errors/` |
 | Extracted Features for RQ3.2| [Download](https://www.dropbox.com/scl/fo/5faddj9zfczyaw4lr33rg/AMO1Wg_lhfuUaAmr2Nt5Xa0?rlkey=2wuru62a9tf5yhjsq0slavsy8&dl=0) | `results/features/` |
 
+All MRs for composition are implemented in `src/mr_utils.py`
+
 ## 🛠️Reproducing Experiment
 
 1. **Generate follow-up test inputs**
