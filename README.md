@@ -22,10 +22,9 @@ This repository provides code and data for our paper.
 | *Source Test Input Set* | [Download](https://www.dropbox.com/scl/fo/zfqodjegi4wh0n04mlh7d/AHd8P5BftYNTmszXqygRudE?rlkey=wowwl40k8hr2mmy3shyo420zn&dl=0) | `data/` |
 
 For Caltech256: After downloading the source test input set to the local destination path, extract it with:
-
-    ```bash
-    tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
-
+```bash
+tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
+```
 
 *Cmponent MRs* for composition are implemented in `src/mr_utils.py`
 
@@ -45,13 +44,17 @@ For Caltech256: After downloading the source test input set to the local destina
 1. **Generate follow-up test inputs**
     ```bash
     python generate_followup.py --dataset MNIST --strength 2
+    ```
 2. **Identify valid test inputs**
     ```bash
     python selforacle.py --dataset MNIST --strength 2
+    ```
 3. **Make predictions**
     ```bash
     python predict.py --dataset MNIST --source True # test source
     python predict.py --dataset MNIST --source False --strength 2 # test followup
+    ```
 4. **Compute the results for RQs**
     ```bash
     RQs.ipynb
+    ```
