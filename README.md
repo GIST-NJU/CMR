@@ -22,7 +22,7 @@ CMR
 |   |   ├── COCO_threshold.txt
 |   |   ├── COCO_VAE.pth
 |   |   ├── COCO_validity.npy
-|   |   ├── ...
+|   |   └── ...
 ├── RQs.ipynb                           # Codes for calculating data and drawing figures for RQs
 └── src                                 # Codes for generating experimental data
     ├── generate_followup.py
