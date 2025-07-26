@@ -2,6 +2,38 @@
 
 This repository provides code and data for our paper.
 
+```
+CMR
+├── data                                # Source test inputs
+├── dataloaders                         # Dataloads for VOC and COCO
+├── figures                             # Figures for RQs
+├── followup                            # Followup test inputs
+│   ├── COCO
+|   |   |── 0
+|   |   |── 1
+|   |   └── ...
+│   └── ...
+├── models                              # DNN models under test
+├── results
+│   ├── errors                          # Failures and Faults
+│   ├── features                        # Extracted features for RQ3.2
+│   ├── predictions                     # Predictions of DNNs on source and followup test inputs
+│   └── SelfOracle
+|   |   ├── COCO_threshold.txt
+|   |   ├── COCO_VAE.pth
+|   |   ├── COCO_validity.npy
+|   |   ├── ...
+├── RQs.ipynb
+└── src
+    ├── generate_followup.py
+    ├── __init__.py
+    ├── mr_utils.py
+    ├── predict
+    ├── predict.py
+    ├── selforacle
+    └── selforacle.py
+```
+
 ## ⚙️Requirements
 
     python==3.8.18
@@ -32,9 +64,9 @@ tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
 
 - *Predictions*: Outputs of the model on source and follow-up inputs
 - *SelfOracle*: The trained VAE models, thresholds, and validity of followup inputs
-- 'Failure & Fault': Failures and faults are calculated accordings to *predictions*
-- 'Extracted Features': Extracted Features of source and followup inputs for RQ3.2
-- 'Figures': Figurs of RQ1, RQ2, RQ3.1, RQ3.2
+- *Failure & Fault*: Failures and faults are calculated accordings to *predictions*
+- *Extracted Features*: Extracted Features of source and followup inputs for RQ3.2
+- *Figures*: Figurs of RQ1, RQ2, RQ3.1, RQ3.2
 
 **Data available at the link below.**
 
