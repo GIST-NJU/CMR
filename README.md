@@ -30,31 +30,43 @@ tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
 
 ## 📃Experimental Data
 
+- *Predictions*: Outputs of the model on source and follow-up inputs
+- *SelfOracle*: The trained VAE models, thresholds, and validity of followup inputs
+- 'Failure & Fault': Failures and faults are calculated accordings to *predictions*
+- 'Extracted Features': Extracted Features of source and followup inputs for RQ3.2
+- 'Figures': Figurs of RQ1, RQ2, RQ3.1, RQ3.2
+
+**Data available at the link below.**
+
 | Resources | Download Link | Local Destination Path |
 |---|---|---|
 | Predictions | [Download](https://www.dropbox.com/scl/fo/moicow2jgo0q05pgmi6gq/ACkrFH2xQKBdzJ-VqlvSSQE?rlkey=mw75vfwv9gz7pux9cleutryuv&dl=0) | `results/predictions/` |
-| SelfOracle for Validity| [Download](https://www.dropbox.com/scl/fo/0cicv66v6a5eex6rjbkpn/AGgBgdneMProMpCZIG5Riq4?rlkey=qpbthrzlz56sc3bgthz3609nk&dl=0) | `results/SelfOracle/` |
-| Failure / Fault | [Download](https://www.dropbox.com/scl/fo/djz19v7z6zevl7rl0gewr/ALmhuzP_NqHgkvYJsxZ1E1A?rlkey=0h1zhzqovcerion5egpmlmtew&dl=0) | `results/errors/` |
-| Extracted Features for RQ3.2| [Download](https://www.dropbox.com/scl/fo/5faddj9zfczyaw4lr33rg/AMO1Wg_lhfuUaAmr2Nt5Xa0?rlkey=2wuru62a9tf5yhjsq0slavsy8&dl=0) | `results/features/` |
-
+| SelfOracle | [Download](https://www.dropbox.com/scl/fo/0cicv66v6a5eex6rjbkpn/AGgBgdneMProMpCZIG5Riq4?rlkey=qpbthrzlz56sc3bgthz3609nk&dl=0) | `results/SelfOracle/` |
+| Failure & Fault | [Download](https://www.dropbox.com/scl/fo/djz19v7z6zevl7rl0gewr/ALmhuzP_NqHgkvYJsxZ1E1A?rlkey=0h1zhzqovcerion5egpmlmtew&dl=0) | `results/errors/` |
+| Extracted Features| [Download](https://www.dropbox.com/scl/fo/5faddj9zfczyaw4lr33rg/AMO1Wg_lhfuUaAmr2Nt5Xa0?rlkey=2wuru62a9tf5yhjsq0slavsy8&dl=0) | `results/features/` |
+| Figures | `figures/`| - |
 
 
 ## 🛠️Reproducing Experiment
 
 1. **Generate follow-up test inputs**
     ```bash
-    python generate_followup.py --dataset MNIST --strength 2
+    python generate_followup.py --dataset COCO --strength 2
     ```
+    Output: Followup inputs are saved in `followup/dataset/cmr`. For example, `followup/COCO/312`
 2. **Identify valid test inputs**
     ```bash
-    python selforacle.py --dataset MNIST --strength 2
+    python selforacle.py --dataset COCO
     ```
+    Output: the VAE model, threshold, and validity of followup inputs are stored in `results/SelfORacle/`. For example, `COCO_VAE.pth`, `COCO_threshold.txt`, `COCO_validity.pth`
 3. **Make predictions**
     ```bash
-    python predict.py --dataset MNIST --source True # test source
-    python predict.py --dataset MNIST --source False --strength 2 # test followup
+    python predict.py --dataset COCO --source True # test source
+    python predict.py --dataset COCO --source False --strength 2 # test followup
     ```
+    Output: the predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
 4. **Compute the results for RQs**
     ```bash
     RQs.ipynb
     ```
+    Output: obtain data for all RQs. Table data is printed directly within the book, while figures are saved  in `figures/`
