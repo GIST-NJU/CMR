@@ -8,8 +8,9 @@ import torch
 from PIL import Image
 from itertools import permutations
 from torchvision import datasets
+from sklearn.model_selection import train_test_split
 
-class FollowupDataset(torch.utils.data.Dataset):
+class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, dataset, cmr=None, transform=None):
         self.transform = transform
         self.data = []
@@ -51,8 +52,13 @@ def load_source(dataset: str):
         source_inputs = datasets.MNIST(root='./data', train=False, download=False)
     elif dataset=='caltech256':
         caltech256_dataset = datasets.Caltech256(root='data', download=False)
+        X = [caltech256_dataset[i][0] for i in range(len(caltech256_dataset))]
+        y = [caltech256_dataset[i][1] for i in range(len(caltech256_dataset))]
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.1, random_state=18, stratify=y)
+        source_inputs = CustomDataset(zip(X_test, y_test))
     elif dataset=='VOC':
-        pass
+        
     else:
         
         pass

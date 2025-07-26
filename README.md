@@ -53,7 +53,7 @@ tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
     ```bash
     python generate_followup.py --dataset COCO --strength 2
     ```
-    Output: Followup inputs are saved in `followup/dataset/cmr`. For example, `followup/COCO/312`
+    Output: Followup inputs are saved in `followup/dataset/cmr`. For example, `followup/COCO/31`
 2. **Identify valid test inputs**
     ```bash
     python selforacle.py --dataset COCO
