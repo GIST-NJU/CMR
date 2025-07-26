@@ -23,8 +23,8 @@ CMR
 |   |   ├── COCO_VAE.pth
 |   |   ├── COCO_validity.npy
 |   |   ├── ...
-├── RQs.ipynb
-└── src
+├── RQs.ipynb                           # Codes for calculating data and drawing figures for RQs
+└── src                                 # Codes for generating experimental data
     ├── generate_followup.py
     ├── __init__.py
     ├── mr_utils.py
