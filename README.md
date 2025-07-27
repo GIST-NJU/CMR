@@ -36,16 +36,11 @@ CMR
 
 ## ⚙️Requirements
 
-    python==3.8.18
-    ipykernel==6.26.0
-    jupyter_client==7.3.4
-    jupyter_core==5.5.1
-    torch==2.0.1+cu118
-    torchvision==0.15.2+cu118
-    sklearn==1.3.2
-    cv2==4.7.0
-    numpy==1.23.5
-    pandas==1.4.3
+```bash
+conda create -n cmr python=3.8.18
+conda activate cmr
+pip install -r requirements.txt
+```
 
 ## 📦Experimental Subjects
 | Models & Datasets | Download Link | Local Destination Path |
