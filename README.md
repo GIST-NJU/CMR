@@ -14,6 +14,7 @@ CMR
 |   |   └── ...
 │   └── ...
 ├── models                              # DNN models under test
+├── requirements.txt
 ├── results
 │   ├── errors                          # Failures and Faults
 │   ├── features                        # Extracted features for RQ3.2
