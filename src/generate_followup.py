@@ -9,12 +9,28 @@ from dataloaders.default_coco import COCO2014Classification
 import argparse
 from pathlib import Path
 import torch
-from PIL import Image
 from itertools import permutations
 from torchvision import datasets
 from sklearn.model_selection import train_test_split
 import subprocess
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, required=True,
+                        help='Dataset name, e.g. MNIST')
+    parser.add_argument('--strength', type=int, required=True,
+                        help='Composition strength k')
+    return parser.parse_args()
+
+def validate_args(args):
+    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO']:
+        print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
+        print("Supported datasets: MNIST, caltech256, VOC, COCO")
+        sys.exit(1)
+
+    if not (1 <= args.strength <= len(mrs)):
+        print(f"[ERROR] Composition strength must be between 1 and {len(mrs)}")
+        sys.exit(1)
 
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, dataset, cmr=None, transform=None):
@@ -34,24 +50,6 @@ class CustomDataset(torch.utils.data.Dataset):
         if self.transform is not None:
             data = self.transform(data)
         return data, []
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, required=True,
-                        help='Dataset name, e.g. MNIST')
-    parser.add_argument('--strength', type=int, required=True,
-                        help='Composition strength k')
-    return parser.parse_args()
-
-def validate_args(args):
-    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO']:
-        print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
-        print("Supported datasets: MNIST, caltech256, VOC, COCO")
-        sys.exit(1)
-
-    if not (1 <= args.strength <= len(mrs)):
-        print(f"[ERROR] Composition strength must be between 1 and {len(mrs)}")
-        sys.exit(1)
 
 def load_source(dataset: str):
     if dataset=='MNIST':

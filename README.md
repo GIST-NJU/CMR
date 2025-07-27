@@ -19,9 +19,9 @@ CMR
 │   ├── features                        # Extracted features for RQ3.2
 │   ├── predictions                     # Predictions of DNNs on source and followup test inputs
 │   └── SelfOracle
-|   |   ├── COCO_threshold.txt
-|   |   ├── COCO_VAE.pth
-|   |   ├── COCO_validity.npy
+|   |   ├── COCO_threshold.txt          # Threshold corresponding to false alarm
+|   |   ├── COCO_VAE.pth                # Trained VAE
+|   |   ├── COCO_validity.npy           # Validity of followup test inputs
 |   |   └── ...
 ├── RQs.ipynb                           # Codes for calculating data and drawing figures for RQs
 └── src                                 # Codes for generating experimental data
@@ -52,11 +52,6 @@ CMR
 |---|---|---|
 | *DNN Under Test* | [Download](https://www.dropbox.com/scl/fo/x9et5salo528e8inh2999/ANrIfVqVdQqvUrVFzkKiiu8?rlkey=hetb4y6f7hwtqzeay9nwz1fpn&dl=0) | `models/` |
 | *Source Test Input Set* | [Download](https://www.dropbox.com/scl/fo/zfqodjegi4wh0n04mlh7d/AHd8P5BftYNTmszXqygRudE?rlkey=wowwl40k8hr2mmy3shyo420zn&dl=0) | `data/` |
-
-For Caltech256: After downloading the source test input set to the local destination path, extract it with:
-```bash
-tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
-```
 
 *Cmponent MRs* for composition are implemented in `src/mr_utils.py`
 
@@ -97,7 +92,12 @@ tar -xf data/caltech256/256_ObjectCategories.tar -C data/caltech256
     python predict.py --dataset COCO --source False --strength 2 # test followup
     ```
     Output: the predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
-4. **Compute the results for RQs**
+4. **Count Failure and Fault**
+    ```bash
+    python count_failure_fault.py -- dataset COCO
+    ```
+    Output: the failres and faults are saved in `results/errors/`. For example, `failure_COCO_MLD.pkl` and `fault_COCO_MLD.pkl`. Both are stored as dict: key is cmr, and values is the list of violated test groups and the set of fault types, respectively.
+5. **Compute the results for RQs**
     ```bash
     RQs.ipynb
     ```
