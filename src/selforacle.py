@@ -5,10 +5,10 @@ import importlib
 from pathlib import Path
 
 def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument("--dataset", required=True, type=str.lower)
-    p.add_argument("--strength", type=int, required=True)
-    return p.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, required=True,
+                        help='Dataset name, e.g. MNIST')
+    return parser.parse_args()
 
 def validate_args(args):
     if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO']:
@@ -19,8 +19,8 @@ def validate_args(args):
 def main():
     args = parse_args()
     validate_args(args)
-    module = importlib.import_module(f"selforacle.{args.dataset}")
-    module.run(args.dataset.lower(), args.strength)
+    module = importlib.import_module(f"selforacle.{args.dataset.lower()}")
+    module.run()
 
 if __name__ == "__main__":
     main()

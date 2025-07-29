@@ -56,7 +56,7 @@ def load_source(dataset: str):
         source_inputs = datasets.MNIST(root='./data', train=False, download=False)
     elif dataset=='caltech256':
         tar_path = "data/caltech256/256_ObjectCategories.tar"
-        extract_dir = "data/caltech256/256_ObjectCategories"  # 解压后的目录名（根据实际情况调整）
+        extract_dir = "data/caltech256/256_ObjectCategories"
         if not Path(extract_dir).exists():
             subprocess.run(["tar", "-xf", tar_path, "-C", os.path.dirname(extract_dir)], check=True)
         caltech256_dataset = datasets.Caltech256(root='data', download=False)

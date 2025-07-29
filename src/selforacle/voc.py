@@ -1,97 +1,43 @@
-import os
 import numpy as np
-import cv2 as cv
-from PIL import Image, ImageEnhance
+from scipy.stats import gamma
+import numpy as np
+import os
+from PIL import Image
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
-from torchvision import datasets, transforms,models
-import torch.backends.cudnn as cudnn
-from itertools import permutations
-from sklearn.model_selection import train_test_split
+from torchvision import datasets, transforms
 import math
-
+import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
 
-torch.manual_seed(28)
-cudnn.deterministic = True
 
-def rotate(x, degree):
-    # Rotate the image by degrees counter clockwise
-    return x.rotate(degree)
-
-def enh_bri(x, brightness):
-    bri = ImageEnhance.Brightness(x)
-    return bri.enhance(brightness)
-
-def enh_con(x, contrast):
-    con = ImageEnhance.Contrast(x)
-    return con.enhance(contrast)
-
-def enh_sha(x, sharpness):
-    sha = ImageEnhance.Sharpness(x)
-    return sha.enhance(sharpness)
-
-def gaussian(x, kernel_size):
-    x = np.array(x)
-    x = cv.GaussianBlur(x, kernel_size, sigmaX=0)
-    return Image.fromarray(x)
-
-def shear(x, shear_factor):
-    shear_matrix = [1, shear_factor, 0, 0, 1, 0]
-
-    sheared_img = x.transform(
-        x.size, Image.Transform.AFFINE, shear_matrix
-    )
-    return sheared_img
-
-def translate(x, shift):
-    shift_x, shift_y = shift[0], shift[1]
-
-    translated_img = x.transform(
-        x.size, Image.Transform.AFFINE, (1, 0, shift_x, 0, 1, shift_y)
-    )
-    return translated_img
-
-mrs = [rotate, enh_bri, enh_sha, enh_con, gaussian, shear, translate]
-mrs_name =[mr.__name__ for mr in mrs]
-paras = [3, 0.8, 0.8, 0.8, (3, 3), 0.1, (1,1)]
-
-class CustomDataset(Dataset):
-    def __init__(self, dataset, cmr=None, transform=None):
+class FollowupDataset(Dataset):
+    def __init__(self, root_dir, transform=None):
+        self.root_dir = root_dir
         self.transform = transform
-        self.data = []
-        self.labels = []
-        for idx, (img, label) in enumerate(dataset):
-            if cmr is not None:
-                for index in cmr:
-                    img = mrs[index](img, paras[index])
-            self.data.append(img)
-            self.labels.append(label)
-            
+        self.images = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+
     def __len__(self):
-        return len(self.data)
+        return len(self.images)
 
     def __getitem__(self, idx):
-        data, label = self.data[idx], self.labels[idx]
-        if self.transform is not None:
-            data = self.transform(data)
-        return data, label
-    
-class Conv2dSame(torch.nn.Conv2d):
+        img_path = self.images[idx]
+        image = Image.open(img_path).convert('RGB')
+        if self.transform:
+            image = self.transform(image)
+        return image
 
+
+class Conv2dSame(torch.nn.Conv2d):
     def calc_same_pad(self, i: int, k: int, s: int, d: int) -> int:
         return max((math.ceil(i / s) - 1) * s + (k - 1) * d + 1 - i, 0)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         ih, iw = x.size()[-2:]
-
         pad_h = self.calc_same_pad(i=ih, k=self.kernel_size[0], s=self.stride[0], d=self.dilation[0])
         pad_w = self.calc_same_pad(i=iw, k=self.kernel_size[1], s=self.stride[1], d=self.dilation[1])
-
         if pad_h > 0 or pad_w > 0:
             x = F.pad(
                 x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2]
@@ -109,7 +55,6 @@ class Conv2dSame(torch.nn.Conv2d):
 class VAE(nn.Module):
     def __init__(self, latent_size):
         super(VAE, self).__init__()
-
         self.encoder = nn.Sequential(
             Conv2dSame(3, 16, kernel_size=3, stride=2),
             nn.ReLU(),
@@ -122,9 +67,8 @@ class VAE(nn.Module):
             Conv2dSame(128, 128, kernel_size=3, stride=2),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(128*(img_dim//8)*(img_dim//8), latent_size * 2)  # 输出均值和方差
+            nn.Linear(128*(img_dim//8)*(img_dim//8), latent_size * 2)
         )
-
         self.decoder = nn.Sequential(
             nn.Linear(latent_size, 128*(img_dim//8)*(img_dim//8)),
             nn.ReLU(),
@@ -149,11 +93,114 @@ class VAE(nn.Module):
         latent_params = self.encoder(x)
         mu, logvar = torch.chunk(latent_params, 2, dim=1)
         z = self.reparameterize(mu, logvar)
-
         reconstructed = self.decoder(z)
         return reconstructed, mu, logvar
 
+
+def train_vae():
+    save_path = 'results/SelfOracle/VOC_VAE.pth'
+    if os.path.exists(save_path):
+        model.load_state_dict(torch.load('results/SelfOracle/VOC_VAE.pth'))
+        return
+
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.MSELoss(reduction='mean')
+    model.train()
+    for epoch in range(epochs):
+        running_loss = 0.0
+        for batch_idx, data in enumerate(train_loader):
+            data = data.to(device)
+            optimizer.zero_grad()
+            recon_batch, mu, logvar = model(data)
+            MSE = criterion(recon_batch, data)
+            KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            loss = MSE + KLD
+            loss.backward()
+            running_loss += loss.item()
+            optimizer.step()
+            
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader.dataset)}")
+    model.eval()
+    test_loss = 0.0
+    with torch.no_grad():
+        for i, data in enumerate(test_loader):
+            data = data.to(device)
+            recon_batch, mu, logvar = model(data)
+            test_loss += criterion(recon_batch, data).item()
+
+    test_loss /= len(test_loader.dataset)
+    print(f"Test set loss: {test_loss:.4f}")
+
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    torch.save(model.state_dict(), save_path)
+
+
+def calculate_threshold():
+    save_path = 'results/SelfOracle/VOC_threshold.txt'
+    if os.path.exists(save_path):
+        return
+    
+    criterion = nn.MSELoss(reduction='mean')
+    test_loader = DataLoader(test_set, batch_size=1, shuffle=False, collate_fn=custom_collate)
+    error_testing = np.zeros(len(test_set))
+    model.load_state_dict(torch.load('results/SelfOracle/VOC_VAE.pth'))
+    model.to(device)
+    model.eval()
+    with torch.no_grad():
+        for i, data in enumerate(test_loader):
+            data = data.to(device)
+            recon_batch, _, _ = model(data)
+            error_testing[i] = criterion(recon_batch, data).cpu().item()
+
+    print(error_testing)
+    shape, loc, scale = gamma.fit(error_testing, floc=0)
+    false_alarm = 0.0001
+    threshold = gamma.ppf(1-false_alarm, shape, loc, scale)
+    print(threshold)
+    print(np.where(error_testing>threshold)[0].size)
+
+    with open(save_path, 'w') as f:
+        f.write(f'False_alarm: {false_alarm}\n')
+        f.write(f'Threshold: {threshold}\n')
+
+def predict_validity():
+    criterion = nn.MSELoss(reduction='mean')
+    result_selfOracle = {}
+    batch_size = 1
+    model.eval()
+    model.to(device)
+
+    followup_dir = 'followup/VOC'
+    entries = os.listdir(followup_dir)
+    folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
+    folders = sorted(folders)
+    for folder in folders:
+        cmr = tuple(int(char) for char in folder)
+        result_selfOracle[cmr] = []
+        followup_path = os.path.join(followup_dir, folder)
+        followup_test_set = FollowupDataset(followup_path, transform=transform)
+        followup_test_loader = DataLoader(followup_test_set, batch_size=batch_size, shuffle=False)
+        
+        with torch.no_grad():
+            for batch_idx, data in enumerate(followup_test_loader):
+                data = data.to(device)
+                recon, _, _ = model(data)
+                error = criterion(recon, data)
+                result_selfOracle[cmr].append(error.cpu().item())
+        print(cmr)
+    np.save('results/SelfOracle/VOC_validity.npy', result_selfOracle)
+
+def run():
+    train_vae()
+    calculate_threshold()
+    predict_validity()
+
+
 img_dim = 128
+epochs = 50
+batch_size = 128
+lr = 1e-3
+input_size = 3 * 128 * 128
 latent_size = 1024
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -166,51 +213,8 @@ def custom_collate(batch):
     inputs = [item[0] for item in batch]
     return default_collate(inputs)
 
+train_set = datasets.VOCDetection('data/VOC', year="2007", image_set='trainval', transform=transform)
+train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=custom_collate)
+test_set = datasets.VOCDetection('data/VOC', year="2007", image_set='test', transform=transform)
+test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
 model = VAE(latent_size=latent_size).to(device)
-model.load_state_dict(torch.load('results/SelfOracle/VOC_VAE.pth'))
-
-test_set = datasets.VOCDetection('data/VOC', year="2007", image_set='test')
-
-criterion = nn.MSELoss(reduction='mean')
-batch_size = 1
-model.eval()
-model.to(device)
-
-chunk_size = 50
-filename = 'results/SelfOracle/VOC_validity.npy'
-result_selfOracle = {}
-num = 0
-if os.path.exists(filename):
-    existed = np.load(filename,allow_pickle=True).item()
-else:
-    existed = {}
-for i in range(len(mrs)):
-    for cmr in permutations(range(len(mrs)), i+1):
-        if cmr in existed.keys():
-            continue
-
-        result_selfOracle[cmr] = []
-        followup_test_set = CustomDataset(test_set, cmr, transform=transform)
-        followup_test_loader = DataLoader(followup_test_set, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
-        with torch.no_grad():
-            for batch_idx, data in enumerate(followup_test_loader):
-                data = data.to(device)
-                recon, _, _ = model(data)
-                error = criterion(recon, data)
-                result_selfOracle[cmr].append(error.cpu().item())
-        print(cmr)
-
-        num += 1
-        if num == chunk_size:   
-            result_selfOracle.update(existed)
-            np.save(filename, result_selfOracle)
-            existed = result_selfOracle
-            num = 0
-            result_selfOracle = {}
-
-if len(result_selfOracle) != 0:
-    result_selfOracle.update(existed)
-    np.save(filename, result_selfOracle)
-
-# check
-print(len(np.load(filename, allow_pickle=True).item()))
