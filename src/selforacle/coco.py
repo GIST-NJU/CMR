@@ -98,9 +98,9 @@ class VAE(nn.Module):
 
 
 def train_vae():
-    save_path = 'results/SelfOracle1/COCO_VAE.pth'
+    save_path = 'results/SelfOracle/COCO_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle1/COCO_VAE.pth'))
+        model.load_state_dict(torch.load('results/SelfOracle/COCO_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -136,12 +136,11 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle1/COCO_threshold.txt'
+    save_path = 'results/SelfOracle/COCO_threshold.txt'
     if os.path.exists(save_path):
         return
     
     criterion = nn.MSELoss(reduction='none')
-    test_loader = DataLoader(test_set, batch_size=4096, shuffle=False, collate_fn=custom_collate)
     error_testing = []
     model.load_state_dict(torch.load('results/SelfOracle/COCO_VAE.pth'))
     model.to(device)
@@ -154,7 +153,7 @@ def calculate_threshold():
             error_testing.extend([torch.mean(batch_error[i]).cpu().item() for i in range(batch_error.shape[0])])
             #print(len(error_testing))
             #print(error_testing)
-    print(error_testing)
+    #print(error_testing)
     shape, loc, scale = gamma.fit(error_testing, floc=0)
     false_alarm = 0.0001
     threshold = gamma.ppf(1-false_alarm, shape, loc, scale)
@@ -181,7 +180,7 @@ def predict_validity():
         result_selfOracle[cmr] = []
         followup_path = os.path.join(followup_dir, folder)
         followup_test_set = FollowupDataset(followup_path, transform=transform)
-        followup_test_loader = DataLoader(followup_test_set, batch_size=batch_size, shuffle=False)
+        followup_test_loader = DataLoader(followup_test_set, batch_size=batch_size, shuffle=False, num_workers=2)
         
         with torch.no_grad():
             for batch_idx, data in enumerate(followup_test_loader):
@@ -190,7 +189,7 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].extend([torch.mean(error[i]).cpu().item() for i in range(error.shape[0])])
         print(cmr)
-    np.save('results/SelfOracle1/COCO_validity.npy', result_selfOracle)
+    np.save('results/SelfOracle/COCO_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -216,17 +215,17 @@ def custom_collate(batch):
 
 data_dir = 'data/COCO/'
 coco_train = datasets.CocoDetection(root=data_dir + 'train2014',
-                            annFile=data_dir + 'annotations/instances_train2014.json',
+                            annFile=data_dir + 'instances_train2014.json',
                             transform=transform)
 coco_val = datasets.CocoDetection(root=data_dir + 'val2014',
-                          annFile=data_dir + 'annotations/instances_val2014.json',
+                          annFile=data_dir + 'instances_val2014.json',
                           transform=transform)
 train_set = ConcatDataset([coco_train, coco_val])
 print(len(train_set))
 test_set = datasets.CocoDetection(root=data_dir + 'test2014',
-                            annFile=data_dir + 'annotations/image_info_test2014.json',
+                            annFile=data_dir + 'image_info_test2014.json',
                             transform=transform)
 print(len(test_set))
-train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=custom_collate)
-test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
+train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=custom_collate, num_workers=8)
+test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, collate_fn=custom_collate, num_workers=8)
 model = VAE(latent_size=latent_size).to(device)

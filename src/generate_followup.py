@@ -80,6 +80,8 @@ def apply_cmr(dataset, source_inputs, cmr, out_dir):
             img = img[0]
         for index in cmr:
             img = mrs[index](img, paras[index])
+        if dataset!='MNIST':
+            img = img.convert('RGB')
         img.save(save_path)
 
 def main():
