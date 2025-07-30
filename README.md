@@ -84,8 +84,8 @@ pip install -r requirements.txt
     Output: the VAE model, threshold, and validity of followup inputs are stored in `results/SelfORacle/`. For example, `COCO_VAE.pth`, `COCO_threshold.txt`, `COCO_validity.pth`
 3. **Make predictions**
     ```bash
-    python predict.py --dataset COCO --source True # test source
-    python predict.py --dataset COCO --source False --strength 2 # test followup
+    python predict.py --dataset COCO # test source
+    python predict.py --dataset COCO --followup # test followup
     ```
     Output: the predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
 4. **Count Failure and Fault**
