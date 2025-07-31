@@ -30,7 +30,7 @@ class FollowupDataset(Dataset):
         image = Image.open(img_path)
         if self.transform:
             image = self.transform(image)
-        return (image, '', torch.tensor(self.inp)), torch.zeros(20)
+        return (image, '', torch.tensor(self.inp)), torch.zeros(args.num_classes)
 
     def get_cat2id(self):
         object_categories = ['aeroplane', 'bicycle', 'bird', 'boat',
@@ -142,6 +142,5 @@ args.use_gpu = torch.cuda.is_available()
 model = MSRN(args.num_classes, args.pool_ratio, args.backbone, args.graph_file)
 model = msrn_load_pretrain_model(model, args)
 source_test_dataset = Voc2007Classification(args.data, phase=args.phase, inp_name=args.inp_name)
-print(source_test_dataset[0][1])
 folder_path = './results/predictions/VOC'
 os.makedirs(folder_path, exist_ok=True)
