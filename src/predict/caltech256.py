@@ -110,5 +110,5 @@ model.classifier = nn.Linear(model.classifier.in_features, num_classes)
 model.load_state_dict(torch.load('./models/'+model_name+'.pth'))
 model.eval()
 model.to(device)
-folder_path = './predictions/Caltech256'
+folder_path = './results/predictions/Caltech256'
 os.makedirs(folder_path, exist_ok=True)
