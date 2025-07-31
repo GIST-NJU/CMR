@@ -24,7 +24,7 @@ class FollowupDataset(Dataset):
         return image
 
 def test_source():
-    save_path = os.path.join(folder_path, model_name.split('.')[0]+'_source.npy')
+    save_path = os.path.join(folder_path, model_name+'_source.npy')
     if os.path.exists(save_path):
         return
     pred_source = np.zeros(len(mnist_testset),dtype=int)
@@ -37,7 +37,7 @@ def test_source():
     np.save(save_path, pred_source)
 
 def test_followup():
-    save_path = os.path.join(folder_path, model_name.split('.')[0]+'_followup.npy')
+    save_path = os.path.join(folder_path, model_name+'_followup.npy')
     if os.path.exists(save_path):
         return
     pred_followup = {}
@@ -80,8 +80,7 @@ test_loader = torch.utils.data.DataLoader(mnist_testset, batch_size=batch_size, 
 model_name = 'MNIST_AlexNet_9938'
 model = models.alexnet()
 model.classifier[6] = nn.Linear(4096, 10)
-model_name = 'MNIST_AlexNet_9938.pth'
-model.load_state_dict(torch.load('./models/'+model_name))
+model.load_state_dict(torch.load('./models/'+model_name+'.pth'))
 model.eval()
 model.to(device)
 folder_path = './results/predictions/MNIST'
