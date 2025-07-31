@@ -3,6 +3,7 @@ data/*/
 !data/.gitkeep
 models/*/
 !models/.gitkeep
+!models/.gitkeep
 followup/*/
 !followup/.gitkeep
 results/errors/**

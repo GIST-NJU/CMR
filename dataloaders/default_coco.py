@@ -65,7 +65,7 @@ class COCO2014Classification(data.Dataset):
         # For MT, the target is not used. 
         # For speed up, target is set 0.
         target = np.zeros(self.num_classes, np.float32)
-        return (img, filename), target
+        return filename, img, target
 
     def get_cat2id(self):
         return self.cat2idx
