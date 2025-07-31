@@ -99,4 +99,4 @@ pip install -r requirements.txt
     python extract_features.py # Extract features for RQ3.2
     RQs.ipynb
     ```
-    Output: Extracted features are stored in `results/features/`. For answering RQs, table data is printed directly within the book, while figures are saved  in `figures/`
+    Output: Extracted features are stored in `results/features/`. For answering RQs, table data is printed directly within the jupyter notebook, while figures are saved  in `figures/`
