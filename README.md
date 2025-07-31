@@ -26,6 +26,7 @@ CMR
 |   |   └── ...
 ├── RQs.ipynb                           # Codes for calculating data and drawing figures for RQs
 └── src                                 # Codes for generating experimental data
+    ├── extract_features.py
     ├── generate_followup.py
     ├── __init__.py
     ├── mr_utils.py
@@ -95,6 +96,7 @@ pip install -r requirements.txt
     Output: the failres and faults are saved in `results/errors/`. For example, `failure_COCO_MLD.pkl` and `fault_COCO_MLD.pkl`. Both are stored as dict: key is cmr, and values is the list of violated test groups and the set of fault types, respectively.
 5. **Compute the results for RQs**
     ```bash
+    python extract_features.py # Extract features for RQ3.2
     RQs.ipynb
     ```
     Output: obtain data for all RQs. Table data is printed directly within the book, while figures are saved  in `figures/`
