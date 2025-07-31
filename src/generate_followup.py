@@ -72,12 +72,16 @@ def load_source(dataset: str):
     return source_inputs
 
 def apply_cmr(dataset, source_inputs, cmr, out_dir):
-    for idx, (img, _) in enumerate(source_inputs):
+    for idx, data in enumerate(source_inputs):
         save_path = out_dir / f"{idx:05d}.png"
         if save_path.exists():
             continue 
-        if dataset in ['VOC', 'COCO']:
-            img = img[0]
+        if dataset in ['MNIST', 'caltech256']:
+            img = data[0]
+        elif dataset in ['VOC']:
+            img = data[0][0]
+        else:
+            img = data[1]
         for index in cmr:
             img = mrs[index](img, paras[index])
         if dataset!='MNIST':

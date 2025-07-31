@@ -1,13 +1,10 @@
 import argparse
 import torch
-import torch.nn as nn
 import numpy as np
-import pandas as pd
 import os
 import sys
-import pickle
 from torch.utils.data import Dataset
-from torchvision import datasets, transforms
+from torchvision import transforms
 from PIL import Image
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from dataloaders.default_coco import COCO2014Classification

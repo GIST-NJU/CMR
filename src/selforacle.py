@@ -2,7 +2,6 @@
 import argparse
 import sys
 import importlib
-from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser()
