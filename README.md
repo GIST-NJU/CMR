@@ -82,21 +82,21 @@ pip install -r requirements.txt
     ```bash
     python selforacle.py --dataset COCO
     ```
-    Output: the VAE model, threshold, and validity of followup inputs are stored in `results/SelfORacle/`. For example, `COCO_VAE.pth`, `COCO_threshold.txt`, `COCO_validity.pth`
+    Output: The VAE model, threshold, and validity of followup inputs are stored in `results/SelfORacle/`. For example, `COCO_VAE.pth`, `COCO_threshold.txt`, `COCO_validity.pth`
 3. **Make predictions**
     ```bash
     python predict.py --dataset COCO # test source
     python predict.py --dataset COCO --followup # test followup
     ```
-    Output: the predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
+    Output: The predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
 4. **Count Failure and Fault**
     ```bash
     python count_failure_fault.py -- dataset COCO
     ```
-    Output: the failres and faults are saved in `results/errors/`. For example, `failure_COCO_MLD.pkl` and `fault_COCO_MLD.pkl`. Both are stored as dict: key is cmr, and values is the list of violated test groups and the set of fault types, respectively.
+    Output: The failres and faults are saved in `results/errors/`. For example, `failure_COCO_MLD.pkl` and `fault_COCO_MLD.pkl`. Both are stored as dict: key is cmr, and values is the list of violated test groups and the set of fault types, respectively.
 5. **Compute the results for RQs**
     ```bash
     python extract_features.py # Extract features for RQ3.2
     RQs.ipynb
     ```
-    Output: obtain data for all RQs. Table data is printed directly within the book, while figures are saved  in `figures/`
+    Output: Extracted features are stored in `results/features/`. For answering RQs, table data is printed directly within the book, while figures are saved  in `figures/`
