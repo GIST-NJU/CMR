@@ -14,9 +14,9 @@ def parse_args():
     return parser.parse_args()
 
 def validate_args(args):
-    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO']:
+    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
         print(f"[failure] Dataset '{args.dataset}' is not sopported")
-        print("Supported datasets: MNIST, caltech256, VOC, COCO")
+        print("Supported datasets: MNIST, caltech256, VOC, COCO, UTKFace")
         sys.exit(1)
 
 def failure_revealing(dataset, mr, pred_source, pred_followup, validity_followup):
@@ -25,7 +25,7 @@ def failure_revealing(dataset, mr, pred_source, pred_followup, validity_followup
         for i in range(len(pred_source)):
             if validity_followup[mr][i] and (pred_followup[mr][i] != pred_source[i]):
                 failure.append(i)
-    else:
+    elif dataset in ['VOC', 'COCO']:
         pred_f = pred_followup[mr]
         pred_f = pred_f.drop(columns=['img'])
         pred_f = pred_f.to_numpy()
@@ -34,14 +34,27 @@ def failure_revealing(dataset, mr, pred_source, pred_followup, validity_followup
         for i in range(len(pred_source)):
             if validity_followup[mr][i] and (pred_f[i] != pred_source[i]):
                 failure.append(i)
+    elif dataset == 'UTKFace':
+        failure = []
+        for i in range(len(pred_source)):
+            try:
+                if validity_followup[mr][i] and abs(pred_followup[mr][i] - pred_source[i]) > 5: # TODO threshold
+                    failure.append(i)
+            except KeyError as e:
+                print(f"{e} not exists")
+                break
+    else:
+        print('Dataset not supported')
+        sys.exit(1)
     return failure
 
 strength_max = 5
 models = {'MNIST': ['AlexNet'],
     'Caltech256': ['DenseNet121'],
     'VOC': ['MSRN'],
-    'COCO': ['MLD']}
-model_names = ['MNIST_AlexNet_9938', 'Caltech256_DenseNet121_6838', 'VOC_MSRN', 'COCO_MLD']
+    'COCO': ['MLD'],
+    'UTKFace': ['faceptor']}
+model_names = ['MNIST_AlexNet_9938', 'Caltech256_DenseNet121_6838', 'VOC_MSRN', 'COCO_MLD', 'UTKFace_faceptor']
 
 def get_model_name(dataset, model):
     for i in range(len(model_names)):
@@ -72,7 +85,7 @@ def main():
         pred_followup = np.load(os.path.join('results', 'predictions', dataset, model_name+'_followup.npy'),allow_pickle=True).item()
         if dataset in ['MNIST', 'Caltech256']:
             pred_source = np.load(os.path.join('results', 'predictions', dataset, model_name+'_source.npy'))
-        else:
+        elif dataset in ['VOC', 'COCO']:
             pred_source = pd.read_csv(os.path.join('results', 'predictions', dataset, model_name+'_source.csv'), low_memory=False)
             pred_source = pred_source.drop(columns=['img'])
             pred_source = pred_source.to_numpy()
@@ -83,6 +96,12 @@ def main():
                 t = t.to_numpy()
                 t = {i: tuple(sorted(set(row[~pd.isna(row)]))) for i, row in enumerate(t)}
                 pred_followup[key] = t
+        elif dataset == 'UTKFace':
+            pred_source = pd.read_csv(os.path.join('results', 'predictions', dataset, model_name+'_source.csv'), low_memory=False)
+            pred_source = pred_source["pred_label"].to_numpy()
+        else:
+            print('Dataset not supported')
+            sys.exit(1)
 
         failure = {}
         validity_followup = get_validity(dataset)
@@ -91,15 +110,29 @@ def main():
         with open(f'results/errors/failure_{model_name}.pkl', 'wb') as f:
             pickle.dump(failure, f)
 
-        faults_cmr = {}
-        for i in range(strength_max):
-            for cmr in permutations(range(len(mrs)), i + 1):
-                faults = {}
-                for f in failure[cmr]:
-                    source_label = pred_source[f]
-                    followup_label = pred_followup[cmr][f]
-                    faults[f] = (source_label, followup_label)
-                faults_cmr[cmr] = faults
+        if dataset in ['MNIST', 'Caltech256', 'VOC', 'COCO']:
+            faults_cmr = {}
+            for i in range(strength_max):
+                for cmr in permutations(range(len(mrs)), i + 1):
+                    faults = {}
+                    for f in failure[cmr]:
+                        source_label = pred_source[f]
+                        followup_label = pred_followup[cmr][f]
+                        faults[f] = (source_label, followup_label)
+                    faults_cmr[cmr] = faults
+        elif dataset == 'UTKFace':
+            faults_cmr = {}
+            for i in range(strength_max):
+                for cmr in permutations(range(len(mrs)), i + 1):
+                    faults = {}
+                    for f in failure[cmr]:
+                        source_label = pred_source[f]
+                        followup_label = pred_followup[cmr][f]
+                        faults[f] = (int(source_label), int(followup_label))  # TODO: define fault for regression
+                    faults_cmr[cmr] = faults
+        else:
+            print('Dataset not supported')
+            sys.exit(1)
         with open(f'results/errors/fault_{model_name}.pkl', 'wb') as f:
             pickle.dump(faults_cmr, f)
         print(dataset, model, 'Done')

@@ -84,9 +84,24 @@ def load_testset(dataset_name, transform = None):
         dataset = CustomDataset(list(zip(X_test, y_test)), transform=transform)
     elif dataset_name == 'VOC':
         dataset = torchvision.datasets.VOCDetection('data/VOC', year="2007", image_set='test', transform=transform)
-    else: #'COOC'
+    elif dataset_name == 'COCO':
         dataset = torchvision.datasets.CocoDetection(os.path.join(coco_info['data'],'{}2014'.format(coco_info['phase'])), 
             annFile=coco_info['annotation_file'], transform=transform)
+    elif dataset_name == 'UTKFace':
+        test_path = "data/UTKFace/UTK_test_selected"
+        image_data = []
+        for file in sorted(os.listdir(test_path)):
+            img_path = os.path.join(test_path, file)
+            try:
+                img = Image.open(img_path)
+                image_data.append((img, 0))
+            except Exception as e:
+                print(f"Error loading image {img_path}: {e}")
+        print(f"Loaded {len(image_data)} images from UTKFace test set")
+        dataset = CustomDataset(image_data, transform=transform)
+    else:
+        print('Dataset not supported')
+        sys.exit(1)
     return dataset
 
 def train_lenet5():
@@ -208,15 +223,37 @@ def extract_and_save_vgg16_features(datasetname, batch_size=256):
         torch.save(all_features, save_path)
     print(f"{datasetname} features saved")
 
+
+def process_dataset(dataset):
+    if dataset=='MNIST':
+        os.makedirs(os.path.join('results', 'features', 'lenet5'), exist_ok=True)
+        train_lenet5()
+        extract_and_save_lenet5_features(dataset)
+    else:
+        os.makedirs(os.path.join('results', 'features', 'vgg16'), exist_ok=True)
+        extract_and_save_vgg16_features(dataset)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, required=True,
+                        help='Dataset name, e.g. MNIST')
+    return parser.parse_args()
+
+def validate_args(args):
+    if args.dataset not in ['ALL', 'MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
+        print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
+        print("Supported datasets: ALL, MNIST, caltech256, VOC, COCO, UTKFace")
+        sys.exit(1)
+
 def main():
-    for dataset in ['MNIST', 'caltech256', 'VOC', 'COCO']:
-        if dataset=='MNIST':
-            os.makedirs(os.path.join('results', 'features', 'lenet5'), exist_ok=True)
-            train_lenet5()
-            extract_and_save_lenet5_features(dataset)
-        else:
-            os.makedirs(os.path.join('results', 'features', 'vgg16'), exist_ok=True)
-            extract_and_save_vgg16_features(dataset)
+    args = parse_args()
+    validate_args(args)
+    if args.dataset == 'ALL':
+        for dataset in ['MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
+            process_dataset(dataset)
+    else:
+        process_dataset(args.dataset)
 
 if __name__ == "__main__":
     main()
