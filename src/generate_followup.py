@@ -26,6 +26,7 @@ def parse_args():
                         help='Dataset name, e.g. MNIST')
     parser.add_argument('--strength', type=int, required=True,
                         help='Composition strength k')
+    parser.add_argument('--num_workers', type=int, default=8)
     return parser.parse_args()
 
 def validate_args(args):
@@ -93,8 +94,14 @@ def apply_cmr(dataset, source_inputs, cmr, out_dir, pbar: tqdm):
     for idx, data in enumerate(source_inputs):
         save_path = out_dir / f"{idx:05d}.png"
         if save_path.exists():
-            pbar.update(1)
-            continue 
+            try:
+                with Image.open(save_path) as img:
+                    img.verify()
+                pbar.update(1)
+                continue
+            except Exception as e:
+                print(f"{save_path} exists but cannot verify:", e)
+                print(f"regenerating {save_path}")
         if dataset in ['MNIST', 'caltech256', 'UTKFace']:
             img = data[0]
         elif dataset in ['VOC']:
@@ -114,12 +121,10 @@ def main():
     dataset, k = args.dataset, args.strength
     source_inputs = load_source(dataset)
     pbar = tqdm(desc=f"generating followup for strength {k}: ", total=math.perm(7, k) * len(source_inputs))
-    with ThreadPoolExecutor(max_workers=48) as executer:
-        for cmr in permutations(range(len(mrs)),k):
-            # print(cmr)
+    with ThreadPoolExecutor(max_workers=args.num_workers) as executer:
+        for cmr in permutations(range(len(mrs)), k):
             out_dir = Path('followup') / f"{args.dataset}" / ''.join(map(str,cmr))
             out_dir.mkdir(parents=True, exist_ok=True)
-            # apply_cmr(dataset, source_inputs, cmr, out_dir)
             executer.submit(apply_cmr, dataset, source_inputs, cmr, out_dir, pbar)
             time.sleep(1)
     print(f"Done!")
