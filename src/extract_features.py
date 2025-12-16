@@ -11,6 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from mr_utils import mrs
+from tqdm import tqdm
 
 coco_info =  {
     "data_name": "coco",
@@ -24,7 +25,7 @@ class FollowupDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
-        self.images = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+        self.images = [os.path.join(root_dir, f) for f in sorted(os.listdir(root_dir)) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
     def __len__(self):
         return len(self.images)
@@ -204,7 +205,7 @@ def extract_and_save_vgg16_features(datasetname, batch_size=256):
 
     # followup
     for i in range(len(mrs)):
-        print(i)
+        # print(i)
         save_path = os.path.join('results', 'features', 'vgg16', f'{datasetname}_{i}.pt')
         if os.path.exists(save_path):
             continue
@@ -213,7 +214,7 @@ def extract_and_save_vgg16_features(datasetname, batch_size=256):
         loader_followup = torch.utils.data.DataLoader(followup_testset, batch_size=batch_size, shuffle=False, num_workers=4)
         all_features = []
         with torch.no_grad():
-            for images in loader_followup:
+            for images in tqdm(loader_followup, desc=f'Extracting features for mr{i}'):
                 images = images.to(device)
                 features = model(images)
                 features = torch.nn.functional.adaptive_avg_pool2d(features, (1, 1))

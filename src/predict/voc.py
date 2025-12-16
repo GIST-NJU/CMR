@@ -18,7 +18,7 @@ class FollowupDataset(Dataset):
     def __init__(self, root_dir, transform=None, inp_name=None):
         self.root_dir = root_dir
         self.transform = transform
-        self.images = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+        self.images = [os.path.join(root_dir, f) for f in sorted(os.listdir(root_dir)) if f.endswith(('.png', '.jpg', '.jpeg'))]
         with open(inp_name, 'rb') as f:
             self.inp = pickle.load(f)
 

@@ -36,7 +36,7 @@ class FollowupDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
-        self.images = [os.path.join(root_dir, f) for f in os.listdir(root_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+        self.images = [os.path.join(root_dir, f) for f in sorted(os.listdir(root_dir)) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
     def __len__(self):
         return len(self.images)
@@ -194,13 +194,20 @@ def predict_validity():
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
+    
+    if os.path.exists('results/SelfOracle/UTKFace_validity_tmp.npy'):
+        result_selfOracle = np.load('results/SelfOracle/UTKFace_validity_tmp.npy', allow_pickle=True).item()
+
     for folder in tqdm(folders, desc='Processing followup folders'):
         cmr = tuple(int(char) for char in folder)
+        if cmr in result_selfOracle:
+            print(f"CMR {cmr} already processed.")
+            continue
         result_selfOracle[cmr] = []
         followup_path = os.path.join(followup_dir, folder)
         followup_test_set = FollowupDataset(followup_path, transform=transform)
         followup_test_loader = DataLoader(followup_test_set, batch_size=batch_size, shuffle=False, num_workers=20)
-        
+
         with torch.no_grad():
             for batch_idx, data in enumerate(tqdm(followup_test_loader, desc=f'Processing CMR {cmr}')):
                 data = data.to(device)
@@ -208,7 +215,8 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].append(error.cpu().item())
         # print(cmr)
-        np.save('results/SelfOracle/UTKFace_validity.npy', result_selfOracle)
+        np.save('results/SelfOracle/UTKFace_validity_tmp.npy', result_selfOracle)
+    np.save('results/SelfOracle/UTKFace_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
