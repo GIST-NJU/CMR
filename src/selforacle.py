@@ -10,7 +10,7 @@ def parse_args():
     return parser.parse_args()
 
 def validate_args(args):
-    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
+    if args.dataset not in ['MNIST', 'Caltech256', 'VOC', 'COCO', 'UTKFace']:
         print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
         print("Supported datasets: MNIST, caltech256, VOC, COCO, UTKFace")
         sys.exit(1)

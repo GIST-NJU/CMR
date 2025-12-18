@@ -242,16 +242,16 @@ def parse_args():
     return parser.parse_args()
 
 def validate_args(args):
-    if args.dataset not in ['ALL', 'MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
+    if args.dataset not in ['ALL', 'MNIST', 'Caltech256', 'VOC', 'COCO', 'UTKFace']:
         print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
-        print("Supported datasets: ALL, MNIST, caltech256, VOC, COCO, UTKFace")
+        print("Supported datasets: ALL, MNIST, Caltech256, VOC, COCO, UTKFace")
         sys.exit(1)
 
 def main():
     args = parse_args()
     validate_args(args)
     if args.dataset == 'ALL':
-        for dataset in ['MNIST', 'caltech256', 'VOC', 'COCO', 'UTKFace']:
+        for dataset in ['MNIST', 'Caltech256', 'VOC', 'COCO', 'UTKFace']:
             process_dataset(dataset)
     else:
         process_dataset(args.dataset)

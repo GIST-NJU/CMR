@@ -30,7 +30,7 @@ def parse_args():
     return parser.parse_args()
 
 def validate_args(args):
-    if args.dataset not in ['MNIST', 'caltech256', 'VOC', 'COCO', "UTKFace"]:
+    if args.dataset not in ['MNIST', 'Caltech256', 'VOC', 'COCO', "UTKFace"]:
         print(f"[ERROR] Dataset '{args.dataset}' is not sopported")
         print("Supported datasets: MNIST, caltech256, VOC, COCO, UTKFace")
         sys.exit(1)
@@ -61,7 +61,7 @@ class CustomDataset(torch.utils.data.Dataset):
 def load_source(dataset: str):
     if dataset=='MNIST':
         source_inputs = datasets.MNIST(root='./data', train=False, download=False)
-    elif dataset=='caltech256':
+    elif dataset=='Caltech256':
         tar_path = "data/caltech256/256_ObjectCategories.tar"
         extract_dir = "data/caltech256/256_ObjectCategories"
         if not Path(extract_dir).exists():
@@ -102,7 +102,7 @@ def apply_cmr(dataset, source_inputs, cmr, out_dir, pbar: tqdm):
             except Exception as e:
                 print(f"{save_path} exists but cannot verify:", e)
                 print(f"regenerating {save_path}")
-        if dataset in ['MNIST', 'caltech256', 'UTKFace']:
+        if dataset in ['MNIST', 'Caltech256', 'UTKFace']:
             img = data[0]
         elif dataset in ['VOC']:
             img = data[0][0]
