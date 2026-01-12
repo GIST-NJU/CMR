@@ -49,6 +49,7 @@ pip install -r requirements.txt
 |---|---|---|
 | *DNN Under Test* | [Download](https://www.dropbox.com/scl/fo/x9et5salo528e8inh2999/ANrIfVqVdQqvUrVFzkKiiu8?rlkey=hetb4y6f7hwtqzeay9nwz1fpn&dl=0) | `models/` |
 | *Source Test Input Set* | [Download](https://www.dropbox.com/scl/fo/zfqodjegi4wh0n04mlh7d/AHd8P5BftYNTmszXqygRudE?rlkey=wowwl40k8hr2mmy3shyo420zn&dl=0) | `data/` |
+| *Sampled Followup Test Input Set For Human Validation* | [Download](https://box.nju.edu.cn/d/4185dd7480df45078b21/) | `followup/sample_check_followup/` |
 
 *Cmponent MRs* for composition are implemented in `src/mr_utils.py`
 
