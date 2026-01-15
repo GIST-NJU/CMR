@@ -1,42 +1,28 @@
-# How Composite Metamorphic Relations Enhance Test Effectiveness of DNN Testing: An Empirical Study
+# Composite Metamorphic Relations (CMRs) for DNN Testing
 
-This repository provides code and data for our paper.
+This repository is supplementary to the following paper **"How Composite Metamorphic Relations Enhance Test Effectiveness of DNN Testing: An Empirical Study"**.
+
+### 💻 Project Structure
 
 ```
 CMR
-├── data                                # Source test inputs
-├── dataloaders                         # Dataloads for VOC and COCO
-├── figures                             # Figures for RQs
-├── followup                            # Followup test inputs
-│   ├── COCO
-|   |   |── 0
-|   |   |── 1
-|   |   └── ...
-│   └── ...
-├── models                              # DNN models under test
+├── source                # Source test images
+├── followup              # Follow-up test images
+├── models                # DNNs under test
+├── figures               # Figures for RQs
 ├── requirements.txt
 ├── results
-│   ├── errors                          # Failures and Faults
-│   ├── features                        # Extracted features for RQ3.2
-│   ├── predictions                     # Predictions of DNNs on source and followup test inputs
-│   └── SelfOracle
-|   |   ├── COCO_threshold.txt          # Threshold corresponding to false alarm
-|   |   ├── COCO_VAE.pth                # Trained VAE
-|   |   ├── COCO_validity.npy           # Validity of followup test inputs
-|   |   └── ...
-├── RQs.ipynb                           # Codes for calculating data and drawing figures for RQs
-└── src                                 # Codes for generating experimental data
-    ├── extract_features.py
-    ├── generate_followup.py
-    ├── __init__.py
-    ├── mr_utils.py
-    ├── predict
-    ├── predict.py
-    ├── selforacle
-    └── selforacle.py
+│   ├── errors            # Failure rate and fault type metrics
+│   ├── features          # Feature representations of test images
+│   ├── predictions       # Original prediction results
+│   └── validity          # Automated validator and validation results
+├── RQs.ipynb             # Codes for analysing data and generating figures and tables
+└── src                   # Codes for reproducing experiment
 ```
 
-## ⚙️Requirements
+### ⚙️ Requirements 
+
+Run the following command to install the dependencies required:
 
 ```bash
 conda create -n cmr python=3.8.18
@@ -44,60 +30,110 @@ conda activate cmr
 pip install -r requirements.txt
 ```
 
-## 📦Experimental Subjects
-| Models & Datasets | Download Link | Local Destination Path |
-|---|---|---|
-| *DNN Under Test* | [Download](https://www.dropbox.com/scl/fo/x9et5salo528e8inh2999/ANrIfVqVdQqvUrVFzkKiiu8?rlkey=hetb4y6f7hwtqzeay9nwz1fpn&dl=0) | `models/` |
-| *Source Test Input Set* | [Download](https://www.dropbox.com/scl/fo/zfqodjegi4wh0n04mlh7d/AHd8P5BftYNTmszXqygRudE?rlkey=wowwl40k8hr2mmy3shyo420zn&dl=0) | `data/` |
-| *Sampled Followup Test Input Set For Human Validation* | [Download](https://box.nju.edu.cn/d/4185dd7480df45078b21/) | `followup/sample_check_followup/` |
+### 📦 Subject Datasets and DNNs
 
-*Cmponent MRs* for composition are implemented in `src/mr_utils.py`
+The experiment is performed on five DNNs, trained on five popular image recognition related datasets:
 
-## 📃Experimental Data
+* **AlexNet @ MNIST** (single-label classification)
+* **DenseNet @ Caltech256** (single-label classification)
+* **MSRN @ VOC** (multi-label classification)
+* **MLD @ COCO** (multi-label classification)
+* **Faceptor @ UTKFace** (regression-based facial image estimation)
 
-- *Predictions*: Outputs of the model on source and follow-up inputs
-- *SelfOracle*: The trained VAE models, thresholds, and validity of followup inputs
-- *Failure & Fault*: Failures and faults are calculated accordings to *predictions*
-- *Extracted Features*: Extracted Features of source and followup inputs for RQ3.2
-- *Figures*: Figurs of RQ1, RQ2, RQ3.1, RQ3.2
+The DNNs trained can be download from [here](https://www.dropbox.com/scl/fo/x9et5salo528e8inh2999/ANrIfVqVdQqvUrVFzkKiiu8?rlkey=hetb4y6f7hwtqzeay9nwz1fpn&dl=0). You need to put these models in the `models/` directory.
 
-**Data available at the link below.**
-
-| Resources | Download Link | Local Destination Path |
-|---|---|---|
-| Predictions | [Download](https://www.dropbox.com/scl/fo/moicow2jgo0q05pgmi6gq/ACkrFH2xQKBdzJ-VqlvSSQE?rlkey=mw75vfwv9gz7pux9cleutryuv&dl=0) | `results/predictions/` |
-| SelfOracle | [Download](https://www.dropbox.com/scl/fo/0cicv66v6a5eex6rjbkpn/AGgBgdneMProMpCZIG5Riq4?rlkey=qpbthrzlz56sc3bgthz3609nk&dl=0) | `results/SelfOracle/` |
-| Failure & Fault | [Download](https://www.dropbox.com/scl/fo/djz19v7z6zevl7rl0gewr/ALmhuzP_NqHgkvYJsxZ1E1A?rlkey=0h1zhzqovcerion5egpmlmtew&dl=0) | `results/errors/` |
-| Extracted Features| [Download](https://www.dropbox.com/scl/fo/5faddj9zfczyaw4lr33rg/AMO1Wg_lhfuUaAmr2Nt5Xa0?rlkey=2wuru62a9tf5yhjsq0slavsy8&dl=0) | `results/features/` |
-| Figures | `figures/`| - |
+The test sets of these datasets (all of which are used as source test images) can be downloaded [here](https://www.dropbox.com/scl/fo/zfqodjegi4wh0n04mlh7d/AHd8P5BftYNTmszXqygRudE?rlkey=wowwl40k8hr2mmy3shyo420zn&dl=0). You need to put these images in the `source/` directory.
 
 
-## 🛠️Reproducing Experiment
+### 🎛️ Component MRs
 
-1. **Generate follow-up test inputs**
-    ```bash
-    python generate_followup.py --dataset COCO --strength 2
-    ```
-    Output: Followup inputs are saved in `followup/dataset/cmr`. For example, `followup/COCO/31`
-2. **Identify valid test inputs**
-    ```bash
-    python selforacle.py --dataset COCO
-    ```
-    Output: The VAE model, threshold, and validity of followup inputs are stored in `results/SelfORacle/`. For example, `COCO_VAE.pth`, `COCO_threshold.txt`, `COCO_validity.pth`
-3. **Make predictions**
-    ```bash
-    python predict.py --dataset COCO # test source
-    python predict.py --dataset COCO --followup # test followup
-    ```
-    Output: The predictions of the model under test on source are followup inputs are saved in `results/predictions/dataset/`. For example, the `results/predictions/COCO/COCO_MLD_source.csv` and `results/predictions/COCO/COCO_MLD_followup.npy`
-4. **Count Failure and Fault**
-    ```bash
-    python count_failure_fault.py -- dataset COCO
-    ```
-    Output: The failres and faults are saved in `results/errors/`. For example, `failure_COCO_MLD.pkl` and `fault_COCO_MLD.pkl`. Both are stored as dict: key is cmr, and values is the list of violated test groups and the set of fault types, respectively.
-5. **Compute the results for RQs**
-    ```bash
-    python extract_features.py # Extract features for RQ3.2
-    RQs.ipynb
-    ```
-    Output: Extracted features are stored in `results/features/`. For answering RQs, table data is printed directly within the jupyter notebook, while figures are saved  in `figures/`
+The experiment involves a set of seven representative component MRs. The implementation of these MRs is in the `src/mr_utils.py` file.
+
+| MR   | Image Transformation | Identifier Used |
+| ---- | -------------------- | --------------- |
+| MR1  | Brightness           | 1               |
+| MR2  | Contrast             | 3               |
+| MR3  | Sharpness            | 2               |
+| MR4  | Blur (Gaussian)      | 4               |
+| MR5  | Rotation             | 0               |
+| MR6  | Shear (Horizontal)   | 5               |
+| MR7  | Translation          | 6               |
+
+
+### 📃 Experimental Data
+
+The `figures` directory contains all figures presented in the paper:
+
+* *RQ1*: Proportion of valid follow-up test images generated by CMRs
+* *RQ2*: The overlap of fault types that are uncovered by CMR, the strongest MR, and all component MRs
+* *RQ3.1*: Difference in Failure Rate (DFR) and Fault Type (DFT) between CMR and its strongest and average-performing component MR
+* *RQ3.2*: Relationship between DFR (DFT) and ∆M values observed
+
+The `results` directory contains the raw experimental results. Note that the original files included in this directory are typically large, so you need to download them separately and put them into their respective sub-directories.
+
+##### 1. Original Prediction Outputs
+
+The `predictions` directory ([download](https://www.dropbox.com/scl/fo/moicow2jgo0q05pgmi6gq/ACkrFH2xQKBdzJ-VqlvSSQE?rlkey=mw75vfwv9gz7pux9cleutryuv&dl=0)) contains the original prediction outputs of the model on source and follow-up images.
+
+
+##### 2. Validity of Test Inputs
+
+The `validity` directory ([download](https://www.dropbox.com/scl/fo/0cicv66v6a5eex6rjbkpn/AGgBgdneMProMpCZIG5Riq4?rlkey=qpbthrzlz56sc3bgthz3609nk&dl=0)) contains the files for running the *SelfOracle* method, and the results obtained, including:
+
+* `[Dataset]_VAE.pth`: the VAE trained for each dataset
+* `[Dataset]_threshold.txt`: the threshold that is automatically derived based on the VAE and rate of false alarm (0.01%)
+* `[Dataset]_validity.npy`: the validity of follow-up test images that *SelfOracle* determines 
+
+This directory also contains the follow-up test images sampled for manual analysis, as displayed in the `sampled` directory. The `human_validation.csv`  file gives the manual validation results: Each line corresponds to a follow-up test image that is manually determined as semantically *invalid*, where the three columns indicate the dataset name, the validity determined by *SelfOracle* (1 indicates invalid), and the index of the follow-up test image.
+
+
+##### 3. Failure and Fault Revelation
+
+The `error` directory ([download](https://www.dropbox.com/scl/fo/djz19v7z6zevl7rl0gewr/ALmhuzP_NqHgkvYJsxZ1E1A?rlkey=0h1zhzqovcerion5egpmlmtew&dl=0)) contains the Failure Rate (FR) and Fault Type (FT) values calculated for each individual MR and CMR, as saved in `failure_[DNN].pkl` and `fault_[DNN].pkl` files, respectively.
+
+
+##### 4. Complementary MRs
+
+The `features` directory ([download](https://www.dropbox.com/scl/fo/5faddj9zfczyaw4lr33rg/AMO1Wg_lhfuUaAmr2Nt5Xa0?rlkey=2wuru62a9tf5yhjsq0slavsy8&dl=0)) contains the extracted features of source and follow-up test images for analysing complmentary MRs.
+
+
+### 🛠️ Reproducing Experiment
+
+The following scripts can be used to reproduce the complete experiment and evaluation process. To generate tables and figures presented in the paper, run the commands in `RQs.ipynb`.
+
+##### 1. Generate follow-up test images
+
+```bash
+python generate_followup.py --dataset COCO --strength 2
+```
+The `--dataset` parameter specifies the dataset name, and `--strength` specifies the composition strength applied. The follow-up test images generated by employing the input mappings of the specified CMRs will be saved in `followup/dataset/cmr` directory (e.g., `followup/COCO/31`).
+
+##### 2. Validate follow-up test images
+
+```bash
+python selforacle.py --dataset COCO
+```
+This will run the *SelfOracle* method to determine the validity of test images in `followup/dataset/cmr` directory, and produce results as included in  `results/SelfORacle/` directory.
+
+##### 3. Execute DNNs Under Test
+
+```bash
+python predict.py --dataset COCO            # execute source test images
+python predict.py --dataset COCO --followup # execute follow-up test images
+```
+This will run the DNN to make predications of the test images, and produce results as included in  `results/predictions/` directory.
+
+##### 4. Evaluate Failure and Fault Revelation Capability
+
+```bash
+python count_failure_fault.py --dataset COCO
+```
+This will base on the prediction outputs to calculate the failure and fault revelation related metrics, and produce the results as included in `results/errors/` directory.
+
+##### 5. Calculate the ∆M Measure 
+
+```bash
+python extract_features.py
+```
+
+This will calculate the feature representation of each test image, and produce the results as included in `results/features/` directory.
