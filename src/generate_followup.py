@@ -1,8 +1,5 @@
 import sys
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-sys.path.append(project_root)
 from mr_utils import mrs, paras
 from dataloaders.default_voc import Voc2007Classification
 from dataloaders.default_coco import COCO2014Classification
@@ -60,24 +57,20 @@ class CustomDataset(torch.utils.data.Dataset):
 
 def load_source(dataset: str):
     if dataset=='MNIST':
-        source_inputs = datasets.MNIST(root='./data', train=False, download=False)
+        source_inputs = datasets.MNIST(root='./data/source', train=False, download=True)
     elif dataset=='Caltech256':
-        tar_path = "data/caltech256/256_ObjectCategories.tar"
-        extract_dir = "data/caltech256/256_ObjectCategories"
-        if not Path(extract_dir).exists():
-            subprocess.run(["tar", "-xf", tar_path, "-C", os.path.dirname(extract_dir)], check=True)
-        caltech256_dataset = datasets.Caltech256(root='data', download=False)
+        caltech256_dataset = datasets.Caltech256(root='data/source', download=True)
         X = [caltech256_dataset[i][0] for i in range(len(caltech256_dataset))]
         y = [caltech256_dataset[i][1] for i in range(len(caltech256_dataset))]
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.1, random_state=18, stratify=y)
         source_inputs = CustomDataset(zip(X_test, y_test))
     elif dataset=='VOC':
-        source_inputs = Voc2007Classification("./data/VOC", phase="test", inp_name='models/VOC/voc_glove_word2vec.pkl')
+        source_inputs = Voc2007Classification("./data/source/VOC", phase="test", inp_name='models/VOC/voc_glove_word2vec.pkl')
     elif dataset=='COCO':
-        source_inputs = COCO2014Classification("./data/COCO", phase="test", annotation_file='./data/COCO/image_info_test2014.json')
+        source_inputs = COCO2014Classification("./data/source/COCO", phase="test", annotation_file='./data/source/COCO/image_info_test2014.json')
     elif dataset=='UTKFace':
-        test_path = "data/UTKFace/UTK_test_selected"
+        test_path = "data/source/UTKFace/UTK_test_selected"
         image_data = []
         for file in sorted(os.listdir(test_path)):
             img_path = os.path.join(test_path, file)
@@ -120,10 +113,10 @@ def main():
     validate_args(args)
     dataset, k = args.dataset, args.strength
     source_inputs = load_source(dataset)
-    pbar = tqdm(desc=f"generating followup for strength {k}: ", total=math.perm(7, k) * len(source_inputs))
+    pbar = tqdm(desc=f"generating followup for strength {k}: ", total=math.perm(len(mrs), k) * len(source_inputs))
     with ThreadPoolExecutor(max_workers=args.num_workers) as executer:
         for cmr in permutations(range(len(mrs)), k):
-            out_dir = Path('followup') / f"{args.dataset}" / ''.join(map(str,cmr))
+            out_dir = Path('data') / Path('followup') / f"{args.dataset}" / ''.join(map(str,cmr))
             out_dir.mkdir(parents=True, exist_ok=True)
             executer.submit(apply_cmr, dataset, source_inputs, cmr, out_dir, pbar)
             time.sleep(1)

@@ -98,9 +98,9 @@ class VAE(nn.Module):
 
 
 def train_vae():
-    save_path = 'results/SelfOracle/VOC_VAE.pth'
+    save_path = 'results/validity/VOC_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle/VOC_VAE.pth'))
+        model.load_state_dict(torch.load('results/validity/VOC_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -136,14 +136,14 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle/VOC_threshold.txt'
+    save_path = 'results/validity/VOC_threshold.txt'
     if os.path.exists(save_path):
         return
     
     criterion = nn.MSELoss(reduction='mean')
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False, collate_fn=custom_collate)
     error_testing = np.zeros(len(test_set))
-    model.load_state_dict(torch.load('results/SelfOracle/VOC_VAE.pth'))
+    model.load_state_dict(torch.load('results/validity/VOC_VAE.pth'))
     model.to(device)
     model.eval()
     with torch.no_grad():
@@ -170,7 +170,7 @@ def predict_validity():
     model.eval()
     model.to(device)
 
-    followup_dir = 'followup/VOC'
+    followup_dir = 'data/followup/VOC'
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
@@ -188,7 +188,7 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].append(error.cpu().item())
         print(cmr)
-    np.save('results/SelfOracle/VOC_validity.npy', result_selfOracle)
+    np.save('results/validity/VOC_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -213,8 +213,8 @@ def custom_collate(batch):
     inputs = [item[0] for item in batch]
     return default_collate(inputs)
 
-train_set = datasets.VOCDetection('data/VOC', year="2007", image_set='trainval', transform=transform)
+train_set = datasets.VOCDetection('data/source/VOC', year="2007", image_set='trainval', transform=transform)
 train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn=custom_collate)
-test_set = datasets.VOCDetection('data/VOC', year="2007", image_set='test', transform=transform)
+test_set = datasets.VOCDetection('data/source/VOC', year="2007", image_set='test', transform=transform)
 test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, collate_fn=custom_collate)
 model = VAE(latent_size=latent_size).to(device)

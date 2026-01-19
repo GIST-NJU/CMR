@@ -116,9 +116,9 @@ class VAE(nn.Module):
 
 
 def train_vae():
-    save_path = 'results/SelfOracle/UTKFace_VAE.pth'
+    save_path = 'results/validity/UTKFace_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle/UTKFace_VAE.pth'))
+        model.load_state_dict(torch.load('results/validity/UTKFace_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -156,7 +156,7 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle/UTKFace_threshold.txt'
+    save_path = 'results/validity/UTKFace_threshold.txt'
     if os.path.exists(save_path):
         return
     criterion = nn.MSELoss(reduction='mean')
@@ -164,7 +164,7 @@ def calculate_threshold():
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
 
     error_testing = np.zeros(len(test_set))
-    model.load_state_dict(torch.load('results/SelfOracle/UTKFace_VAE.pth'))
+    model.load_state_dict(torch.load('results/validity/UTKFace_VAE.pth'))
     model.to(device)
     model.eval()
     with torch.no_grad():
@@ -190,13 +190,13 @@ def predict_validity():
     model.eval()
     model.to(device)
 
-    followup_dir = 'followup/UTKFace'
+    followup_dir = 'data/followup/UTKFace'
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
     
-    if os.path.exists('results/SelfOracle/UTKFace_validity_tmp.npy'):
-        result_selfOracle = np.load('results/SelfOracle/UTKFace_validity_tmp.npy', allow_pickle=True).item()
+    if os.path.exists('results/validity/UTKFace_validity_tmp.npy'):
+        result_selfOracle = np.load('results/validity/UTKFace_validity_tmp.npy', allow_pickle=True).item()
 
     for folder in tqdm(folders, desc='Processing followup folders'):
         cmr = tuple(int(char) for char in folder)
@@ -215,8 +215,8 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].append(error.cpu().item())
         # print(cmr)
-        np.save('results/SelfOracle/UTKFace_validity_tmp.npy', result_selfOracle)
-    np.save('results/SelfOracle/UTKFace_validity.npy', result_selfOracle)
+        np.save('results/validity/UTKFace_validity_tmp.npy', result_selfOracle)
+    np.save('results/validity/UTKFace_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -237,7 +237,7 @@ transform = transforms.Compose([
     transforms.Grayscale(num_output_channels=3),
     transforms.ToTensor()])
 
-test_path = "data/UTKFace/UTK_test_selected"
+test_path = "data/source/UTKFace/UTK_test_selected"
 X = []
 y = []
 for file in sorted(os.listdir(test_path)):

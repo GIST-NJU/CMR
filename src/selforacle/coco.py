@@ -98,9 +98,9 @@ class VAE(nn.Module):
 
 
 def train_vae():
-    save_path = 'results/SelfOracle/COCO_VAE.pth'
+    save_path = 'results/validity/COCO_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle/COCO_VAE.pth'))
+        model.load_state_dict(torch.load('results/validity/COCO_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -136,13 +136,13 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle/COCO_threshold.txt'
+    save_path = 'results/validity/COCO_threshold.txt'
     if os.path.exists(save_path):
         return
     
     criterion = nn.MSELoss(reduction='none')
     error_testing = []
-    model.load_state_dict(torch.load('results/SelfOracle/COCO_VAE.pth'))
+    model.load_state_dict(torch.load('results/validity/COCO_VAE.pth'))
     model.to(device)
     model.eval()
     with torch.no_grad():
@@ -171,7 +171,7 @@ def predict_validity():
     model.eval()
     model.to(device)
 
-    followup_dir = 'followup/COCO'
+    followup_dir = 'data/followup/COCO'
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
@@ -189,7 +189,7 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].extend([torch.mean(error[i]).cpu().item() for i in range(error.shape[0])])
         print(cmr)
-    np.save('results/SelfOracle/COCO_validity.npy', result_selfOracle)
+    np.save('results/validity/COCO_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -213,7 +213,7 @@ def custom_collate(batch):
     inputs = [item[0] for item in batch]
     return default_collate(inputs)
 
-data_dir = 'data/COCO/'
+data_dir = 'data/source/COCO/'
 coco_train = datasets.CocoDetection(root=data_dir + 'train2014',
                             annFile=data_dir + 'instances_train2014.json',
                             transform=transform)

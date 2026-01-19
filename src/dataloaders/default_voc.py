@@ -61,25 +61,45 @@ object_categories = ['aeroplane', 'bicycle', 'bird', 'boat',
                      'motorbike', 'person', 'potted plant',
                      'sheep', 'sofa', 'train', 'tv']
 
+# urls = {
+#     'devkit': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar',
+#     'trainval_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar',
+#     'test_images_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar',
+#     'test_anno_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtestnoimgs_06-Nov-2007.tar',
+# }
+
 urls = {
-    'devkit': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar',
-    'trainval_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar',
-    'test_images_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar',
-    'test_anno_2007': 'http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtestnoimgs_06-Nov-2007.tar',
+    'devkit': 'https://appcenter-deeplearning.sh1a.qingstor.com/dataset/voc/2012/VOCdevkit_18-May-2011.tar',
+    'trainval_2007': 'https://appcenter-deeplearning.sh1a.qingstor.com/dataset/voc/2007/VOCtrainval_06-Nov-2007.tar',
+    'test_images_2007': 'https://appcenter-deeplearning.sh1a.qingstor.com/dataset/voc/2007/VOCtest_06-Nov-2007.tar',
+    'test_anno_2007': 'https://appcenter-deeplearning.sh1a.qingstor.com/dataset/voc/2007/VOCtestnoimgs_06-Nov-2007.tar',
 }
 
 
 def read_image_label(file):
     print('[dataset] read ' + file)
     data = dict()
-    with open(file, 'r') as f:
-        for line in f:
-            tmp = line.split(' ')
-            name = tmp[0]
-            label = int(tmp[-1])
-            data[name] = label
-            # data.append([name, label])
-            # print('%s  %d' % (name, label))
+    try:
+        with open(file, 'r') as f:
+            for line in f:
+                tmp = line.split(' ')
+                name = tmp[0]
+                label = int(tmp[-1])
+                data[name] = label
+    except FileNotFoundError:
+        file = file.replace(
+            'dining table', 'diningtable'
+        ).replace(
+            'potted plant', 'pottedplant'
+        ).replace(
+            'tv_', 'tvmonitor_'
+        )
+        with open(file, 'r') as f:
+            for line in f:
+                tmp = line.split(' ')
+                name = tmp[0]
+                label = int(tmp[-1])
+                data[name] = label
     return data
 
 
@@ -176,7 +196,7 @@ def download_voc2007(root):
 
         if not os.path.exists(cached_file):
             print('Downloading: "{}" to {}\n'.format(urls['devkit'], cached_file))
-            util.download_url(urls['devkit'], cached_file)
+            download_url(urls['devkit'], cached_file)
 
         # extract file
         print('[dataset] Extracting tar file {file} to {path}'.format(file=cached_file, path=root))
@@ -198,7 +218,7 @@ def download_voc2007(root):
 
         if not os.path.exists(cached_file):
             print('Downloading: "{}" to {}\n'.format(urls['trainval_2007'], cached_file))
-            util.download_url(urls['trainval_2007'], cached_file)
+            download_url(urls['trainval_2007'], cached_file)
 
         # extract file
         print('[dataset] Extracting tar file {file} to {path}'.format(file=cached_file, path=root))
@@ -221,7 +241,7 @@ def download_voc2007(root):
 
         if not os.path.exists(cached_file):
             print('Downloading: "{}" to {}\n'.format(urls['test_images_2007'], cached_file))
-            util.download_url(urls['test_images_2007'], cached_file)
+            download_url(urls['test_images_2007'], cached_file)
 
         # extract file
         print('[dataset] Extracting tar file {file} to {path}'.format(file=cached_file, path=root))
@@ -244,7 +264,7 @@ def download_voc2007(root):
 
         if not os.path.exists(cached_file):
             print('Downloading: "{}" to {}\n'.format(urls['test_anno_2007'], cached_file))
-            util.download_url(urls['test_anno_2007'], cached_file)
+            download_url(urls['test_anno_2007'], cached_file)
 
         # extract file
         print('[dataset] Extracting tar file {file} to {path}'.format(file=cached_file, path=root))
@@ -260,7 +280,6 @@ def download_voc2007(root):
 class Voc2007Classification(data.Dataset):
     def __init__(self, root, phase, transform=None, target_transform=None, inp_name=None):
         self.root = root
-        self.followup_path = os.path.join(root, 'followup')
         self.path_devkit = os.path.join(root, 'VOCdevkit')
         self.path_images = os.path.join(root, 'VOCdevkit', 'VOC2007', 'JPEGImages')
         self.set = phase

@@ -61,9 +61,9 @@ class VAE(nn.Module):
         return reconstructed, mu, logvar
 
 def train_vae():
-    save_path = 'results/SelfOracle/MNIST_VAE.pth'
+    save_path = 'results/validity/MNIST_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle/MNIST_VAE.pth'))
+        model.load_state_dict(torch.load('results/validity/MNIST_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -98,7 +98,7 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle/MNIST_threshold.txt'
+    save_path = 'results/validity/MNIST_threshold.txt'
     if os.path.exists(save_path):
         return
 
@@ -129,7 +129,7 @@ def predict_validity():
     model.eval()
     model.to(device)
 
-    followup_dir = 'followup/MNIST'
+    followup_dir = 'data/followup/MNIST'
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
@@ -147,7 +147,7 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].append(error.cpu().item())
         print(cmr)
-    np.save('results/SelfOracle/MNIST_validity.npy', result_selfOracle)
+    np.save('results/validity/MNIST_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -163,8 +163,8 @@ epochs = 50
 transform = transforms.Compose([
     transforms.ToTensor(),
 ])
-train_set = datasets.MNIST('data', train=True, download=True, transform=transform)
-test_set = datasets.MNIST('data', train=False, download=True, transform=transform)
+train_set = datasets.MNIST('data/source', train=True, download=True, transform=transform)
+test_set = datasets.MNIST('data/source', train=False, download=True, transform=transform)
 train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

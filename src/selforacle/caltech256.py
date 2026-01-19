@@ -14,13 +14,10 @@ import math
 import torch.nn.functional as F
 
 class CustomDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, cmr=None, transform=None):
+    def __init__(self, dataset, transform=None):
         self.transform = transform
         self.data = []
         for idx, (img, label) in enumerate(dataset):
-            if cmr is not None:
-                for index in cmr:
-                    img = mrs[index](img, paras[index])
             self.data.append(img)
             
     def __len__(self):
@@ -122,9 +119,9 @@ class VAE(nn.Module):
 
 
 def train_vae():
-    save_path = 'results/SelfOracle/Caltech256_VAE.pth'
+    save_path = 'results/validity/Caltech256_VAE.pth'
     if os.path.exists(save_path):
-        model.load_state_dict(torch.load('results/SelfOracle/Caltech256_VAE.pth'))
+        model.load_state_dict(torch.load('results/validity/Caltech256_VAE.pth'))
         return
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -162,7 +159,7 @@ def train_vae():
 
 
 def calculate_threshold():
-    save_path = 'results/SelfOracle/Caltech256_threshold.txt'
+    save_path = 'results/validity/Caltech256_threshold.txt'
     if os.path.exists(save_path):
         return
     criterion = nn.MSELoss(reduction='mean')
@@ -170,7 +167,7 @@ def calculate_threshold():
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
 
     error_testing = np.zeros(len(test_set))
-    model.load_state_dict(torch.load('results/SelfOracle/Caltech256_VAE.pth'))
+    model.load_state_dict(torch.load('results/validity/Caltech256_VAE.pth'))
     model.to(device)
     model.eval()
     with torch.no_grad():
@@ -196,7 +193,7 @@ def predict_validity():
     model.eval()
     model.to(device)
 
-    followup_dir = 'followup/caltech256'
+    followup_dir = 'data/followup/caltech256'
     entries = os.listdir(followup_dir)
     folders = [entry for entry in entries if os.path.isdir(os.path.join(followup_dir, entry))]
     folders = sorted(folders)
@@ -214,7 +211,7 @@ def predict_validity():
                 error = criterion(recon, data)
                 result_selfOracle[cmr].append(error.cpu().item())
         print(cmr)
-    np.save('results/SelfOracle/Caltech256_validity.npy', result_selfOracle)
+    np.save('results/validity/Caltech256_validity.npy', result_selfOracle)
 
 def run():
     train_vae()
@@ -223,7 +220,7 @@ def run():
 
 
 img_dim = 128
-caltech256_dataset = datasets.Caltech256(root='data', download=True)
+caltech256_dataset = datasets.Caltech256(root='data/source', download=True)
 X = [caltech256_dataset[i][0] for i in range(len(caltech256_dataset))]
 y = [caltech256_dataset[i][1] for i in range(len(caltech256_dataset))]
 X_train, X_test, y_train, y_test = train_test_split(
