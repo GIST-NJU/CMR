@@ -1,29 +1,29 @@
 # Composite Metamorphic Relations (CMRs) for DNN Testing
 
-This repository is supplementary to the following paper **"How Composite Metamorphic Relations Enhance Test Effectiveness of DNN Testing: An Empirical Study"**.
+This repository is supplementary to the paper **"How Composite Metamorphic Relations Enhance Test Effectiveness of DNN Testing: An Empirical Study"**.
 
-### 💻 Project Structure
+## 📂 Project Structure
 
 ```
 CMR
 ├── data
 │   ├── source            # Source test images
 │   ├── followup          # Follow-up test images
-│   └── human_validation  # Sampled follow-up test images for human validation
+│   └── human_validation  # Follow-up test images sampled for human validation
 ├── models                # DNNs under test
 ├── figures               # Figures for RQs
 ├── requirements.txt
 ├── results
 │   ├── predictions       # Original prediction results
 │   ├── validity          # Automated validator and validation results
-│   ├── errors            # Failure rate and fault type metrics
+│   ├── errors            # Failures and faults revelation
 │   ├── features          # Feature representations of test images
-│   └── samples           # Indices of Sampled CMRs and source test images for evaluating augmented models
+│   └── samples           # CMRs and source test images for evaluating augmented models
 ├── RQs.ipynb             # Codes for analysing data and generating figures and tables
 └── src                   # Codes for reproducing experiment
 ```
 
-### ⚙️ Requirements 
+## ⚙️ Requirements
 
 Run the following command to install the dependencies required:
 
@@ -33,9 +33,19 @@ conda activate cmr
 pip install -r requirements.txt
 ```
 
-### 📦 Subject Datasets and DNNs
+Run the following command to download additional files (about 75 GB, which are not directly included in this repository due to file size limit):
 
-The experiment is performed on five DNNs, trained on five popular image recognition related datasets:
+```bash
+python download_data.py
+```
+
+These include the *DNNs trained* (in the `models/` directory), the *test sets of datasets* (in the `data/source/` directory), and the *follow-up test images sampled for human validation* (in the `data/human_validation` directory).
+
+Alternatively, you can manually download the above files from [zenodo](https://doi.org/10.5281/zenodo.18303100) and [cocodataset](https://cocodataset.org), and put them into their respective target directories.
+
+## 📦 Subject DNNs and Component MRs
+
+The experiment is performed on five DNNs, trained on five popular image recognition datasets:
 
 * **AlexNet @ MNIST** (single-label classification)
 * **DenseNet @ Caltech256** (single-label classification)
@@ -43,30 +53,7 @@ The experiment is performed on five DNNs, trained on five popular image recognit
 * **MLD @ COCO** (multi-label classification)
 * **Faceptor @ UTKFace** (regression-based facial image estimation)
 
-The DNNs trained can be download from [zenodo](https://doi.org/10.5281/zenodo.18303100) in `models/`. You need to put these models in the `models/` directory.
-
-The test sets of these datasets (all of which are used as source test images) can be downloaded from [zenodo](https://doi.org/10.5281/zenodo.18303100) in `data/source/` or automatically downloaded when running the code, **except for COCO**.
-You need to put these images downloaded from zenodo in the `data/source/` directory.
-
-To prepare source test images for **COCO**, you should download the following archives and extract them as the following directory structure:
-```
-data/source/COCO/
-├── test2014                  # from http://images.cocodataset.org/zips/test2014.zip
-├── train2014                 # from http://images.cocodataset.org/zips/train2014.zip
-├── val2014                   # from http://images.cocodataset.org/zips/val2014.zip
-├── image_info_test2014.json  # from http://images.cocodataset.org/annotations/image_info_test2014.zip
-├── instances_train2014.json  # from http://images.cocodataset.org/annotations/annotations_trainval2014.zip
-└── instances_val2014.json    # same as above
-```
-
-
-### 🎛️ Component MRs
-
-The experiment involves a set of seven representative component MRs. The implementation of these MRs is in the `src/mr_utils.py` file.
-
-In our implementation, each MR is assigned a unique identifier (i.e., its index) in the code.
-Throughout the experiments, MRs are referenced exclusively by these identifiers. When CMRs are applied to generate follow-up test images, the corresponding sequence of MR identifiers is denoted either as an ordered tuple or as a concatenated identifier string.
-The mapping between MRs (in paper) and their identifiers is as follows:
+A total of seven representative component MRs are used to create CMRs for investigation. The implementation of these MRs can be found in the `src/mr_utils.py` file.
 
 | MR   | Image Transformation | Identifier Used |
 | ---- | -------------------- | --------------- |
@@ -78,103 +65,100 @@ The mapping between MRs (in paper) and their identifiers is as follows:
 | MR6  | Shear (Horizontal)   | 5               |
 | MR7  | Translation          | 6               |
 
-For example, the CMR `(3, 1)` (tuple) or the concatenated form `31` (str) indicates that the follow-up test images are generated by first applying `Contrast` (identifier 3) and then `Brightness` (identifier 1).
+In our implementation, each MR is associated with a unique identifier, and the above table gives the mapping between the MRs described in the paper and their corresponding identifiers. Accordingly, each CMR is denoted as *a sequence of identifiers* of its component MRs. For example, for the CMR componsed under the composition sequence *<MR2, MR1>* (i.e., first apply `Contrast` and then `Brightness`), it is denoted as `(3,1)` or `31` in our code and raw data.
 
+## 📊 Experimental Data
 
-### 📃 Experimental Data
-
-The `data/followup/` directory contains the follow-up test images generated by applying CMRs on source test images. The follow-up test set is too large (approximately 78 TB) to provide here. Nevertheless, some randomly selected follow-up images for manual verification (in RQ1) can be downloaded from [zenodo](https://doi.org/10.5281/zenodo.18303100) in `data/human_validation/`, which should be downloaded to `data/human_validation/`.
+#### Figures
 
 The `figures` directory contains all figures presented in the paper:
 
 * *RQ1*: Proportion of valid follow-up test images generated by CMRs
-* *RQ2*: The overlap of fault types that are uncovered by CMR, the strongest MR, and all component MRs
+* *RQ2*: The overlap of fault types uncovered by CMR, the strongest MR, and all component MRs
 * *RQ3.1*: Difference in Failure Rate (DFR) and Fault Type (DFT) between CMR and its strongest and average-performing component MR
-* *RQ3.2*: Relationship between DFR (DFT) and ∆M values observed
+* *RQ3.2*: Relationship between DFR/DFT and ∆M values observed
 
-The `results` directory (can be downloaded from [zenodo](https://doi.org/10.5281/zenodo.18303100) in `results/`) contains the raw experimental results.
+#### Follow-up Test Images
 
-##### 1. Original Prediction Outputs
+The `data/followup/` directory is used to store the follow-up test images generated by applying CMRs on source test images. Since our experiment produced an extreme large volume of follow-up test images (more than 200 millions, approximately 78 TB), we do not provide these images directly. Alternatively, these images can be generated on demand (see [Generate follow-up test images](#1-generate-follow-up-test-images)).
 
-The `predictions` directory contains the original prediction outputs of the model on source and follow-up images, including:
+The `data/human_validation/` directory contains the randomly selected follow-up test images for human validation study (RQ1).
 
-* `[Dataset]/[Dataset]_[DNN]_source.npy` or `[Dataset]/[Dataset]_[DNN]_source.csv`: the prediction results on source test images. Each element in the NumPy array or each row in the CSV corresponds to a single source test image.
-* `[Dataset]/[Dataset]_[DNN]_followup.npy`: the prediction results on follow-up test images generated by applying the specified CMR. The data is organized as a `dict`, where each key corresponds to a CMR and its value is a `list` or `dataframe` of prediction results for all follow-up test images generated by that CMR.
+#### Original Prediction Outputs
 
+The `results/predictions/` directory contains the original prediction outputs of the DNNs on all source and follow-up test images, including:
 
-##### 2. Validity of Test Inputs
+* `[Dataset]/[Dataset]_[DNN]_source.npy/.csv`: the prediction outputs of source test images. Each element in the NumPy array, or each row in the CSV, corresponds to a single source test image.
+* `[Dataset]/[Dataset]_[DNN]_followup.npy`: the prediction outputs of follow-up test images. The data is stored as a `dict`, where the key specifies the identifier of CMR, and the value is a `list` or `dataframe` containing prediction outputs of all follow-up test images generated by that CMR.
 
-The `validity` directory contains the files for running the *SelfOracle* method, and the results obtained, including:
+#### Validity of Test Inputs
 
-* `[Dataset]_VAE.pth`: the VAE trained for each dataset
-* `[Dataset]_threshold.txt`: the threshold that is automatically derived based on the VAE and rate of false alarm (0.01%)
-* `[Dataset]_validity.npy`: the validity of follow-up test images that *SelfOracle* determines, organized in a NumPy array. Each element corresponds to a CMR, and contains a list of float values predicted by the VAE for all follow-up test images generated by applying this CMR. A value less than or equal to the threshold indicates that the corresponding follow-up test image is semantically *valid*.
+The `results/validity/` directory contains the files for running the *SelfOracle* method, and the results obtained, including:
 
-This directory also contains the follow-up test images sampled for manual analysis, as displayed in the `data/human_validation/` directory. The `human_validation.csv`  file gives the manual validation results: Each row corresponds to a follow-up test image that is manually determined as semantically *invalid*, where the three columns indicate the dataset name, the validity determined by *SelfOracle* (1 indicates valid), and the filename of the follow-up test image (e.g., `012_2780_2.png`). Here, the filename encodes that the follow-up image was generated from the source image with index `2780`, using CMR with identifier `012`, and the label of this image is `2`.
+* `[Dataset]_VAE.pth`: the VAE trained for each dataset.
+* `[Dataset]_threshold.txt`: the threshold that is automatically derived based on the VAE and rate of false alarm (0.01%).
+* `[Dataset]_validity.npy`: the reconstruction errors of all follow-up test images obtained. Each element in the NumPy array corresponds to a CMR, and each value in the list corresponds to a follow-up test image generated by that CMR. A value exceeding the threshold indicates an *invalid* image.
+* `human_validation.csv`: the manual validation results. Each row indicates a follow-up test image that is manually determined as semantically *invalid*, and the three columns specify the dataset name, the validity determined by *SelfOracle* (`1` indicates valid), and the filename of the follow-up test image. Here, the filename is formatted as `[Identifier of CMR]_[Source image index]_[Label of source image]`, e.g., `012_2780_2.png` indicates the follow-up test image generated by applying CMR `012` on source test image `2780`, and the label of this source image is `2`.
 
-##### 3. Failure and Fault Revelation
+#### Failure and Fault Revelation
 
-The `errors` directory contains the image indices of failed test images and revealed fault types for each individual MR and CMR, as saved in `failures_[DNN].pkl` and `faults_[DNN].pkl` files, respectively. The data is organized in a dictionary format, where each key corresponds to a MR or CMR, and its value contains the relevant information of failed test images or revealed fault types.
+The `results/errors/` directory contains the failures and fault types observed, including:
 
-To facilitate an intuitive inspection of the Failure Rate (FR) and Fault Type (FT) for each MR or CMR (based on preliminarily processed data that is more detailed than that reported in the paper), we additionally provide `failure_rates.csv` and `fault_types.csv` in this directory. Each row in these CSV files corresponds to a MR/CMR for each DNN, along with their calculated FR/FT values.
+* `failures_[DNN].pkl` and `faults_[DNN].pkl`: the indices of failure-revealing MPs and the fault types uncovered for each MR and CMR. The data is organized in a `dict`, where the key specifies the identifier of an MR or CMR.
+*  `failure_rates.csv` and `fault_types.csv`: the Failure Rate (FR) and Fault Type (FT) metrics calculated for each MR and CMR (as specified by the `CMR` column) under each DNN.
 
+#### Complementary MRs
 
-##### 4. Complementary MRs
+The `results/features/` directory contains the extracted features of source and follow-up test images for analysing complementary MRs, as stored in `[Extractor]/[Dataset].pt` and `[Extractor]/[Dataset]_[MR].pt`. Here, `[Extractor]` indicates the feature extractor used, and `[MR]` is the identifier of the MR applied to generate the follow-up test images. These files are PyTorch tensors with shape `(N,D)`, where `N` is the number of test images and `D` is the dimension of the extracted feature representation. Note that these files contain feature representations obtained from feature extractors. These feature representations were then reduced to eight dimensions using PCA, and the resulting vectors were used to compute ∆M in `RQs.ipynb`.
 
-The `features` directory contains the extracted features of source and follow-up test images for analysing complementary MRs, saved as `[Extractor]/[Dataset].pt` and `[Extractor]/[Dataset]_[MR].pt` files, respectively. Here, `[Extractor]` indicates the feature extractor used (`vgg16` for `Caltech256`, `VOC`, and `COCO`, `lenet50` for `MNIST`, and `insightface` for `UTKFace`), and `[MR]` is the identifier of the MR applied to generate the follow-up test images. These files are PyTorch tensors with shape `(N, D)`, where `N` is the number of test images and `D` is the dimension of the extracted feature representation.
+The extractors used for feature extraction are pre-trained models available directly from the corresponding packages, except for `lenet50`, whose pre-trained model is provided at `results/features/lenet50/lenet50_mnist.pth`.
 
-Note that these files contain the raw extracted features. The features were then reduced to 8 dimensions using PCA (Principal Component Analysis), and the resulting vectors were used to compute ∆M in the `RQs.ipynb` notebook.
+#### Influence of Data Augmentation
 
-The extractors used for feature extraction are pre-trained models available directly from the corresponding packages, except for `lenet50`, whose pre-trained model is provided as `results/features/lenet50/lenet50_mnist.pth`.
+The `results/samples/` directory contains the CMRs and source test images that are randomly selected for evaluating the performance of CMRs under DNNs trained without and with data augmentation, i.e., `[Dataset]_[DNN]_cmr50.pkl` and `[Dataset]_1000.pkl`.
 
-##### 5. Sampled CMRs and Source Images for Evaluating Augmented Models
-
-The `samples` directory contains the indices of sampled CMRs and source images used for evaluating the augmented models, saved as `[Dataset]_[DNN]_cmr[Size].pkl` and `[Dataset]_[Size].pkl`, respectively.
-Where `[Size]` indicates the number of sampled CMRs or source images (e.g., `50` indicates that 50 CMRs are sampled).
-These indices correspond to the original test images in the dataset and can be used to retrieve the actual images for prediction and evaluation.
-
-### 🛠️ Reproducing Experiment
+## 🛠️ Reproducing Experiment
 
 The following scripts can be used to reproduce the complete experiment and evaluation process. To generate tables and figures presented in the paper, run the commands in `RQs.ipynb`.
 
-##### 1. Generate follow-up test images
+#### 1. Generate follow-up test images
 
 ```bash
 python src/generate_followup.py --dataset COCO --strength 2
 ```
 The `--dataset` parameter specifies the dataset name, and `--strength` specifies the composition strength applied. The follow-up test images generated by employing the input mappings of the specified CMRs will be saved in `data/followup/[Dataset]/[CMR]` directory (e.g., `data/followup/COCO/31`).
 
-##### 2. Validate follow-up test images
+#### 2. Validate follow-up test images
 
 ```bash
 python src/selforacle.py --dataset COCO
 ```
-This will run the *SelfOracle* method to determine the validity of test images in `data/followup/[Dataset]/[CMR]` directory, and produce results as included in  `results/validity/` directory.
+This will run the *SelfOracle* method to determine the validity of test images in `data/followup/[Dataset]/[CMR]` directory, and produce results as included in the  `results/validity/` directory.
 
-##### 3. Execute DNNs Under Test
+#### 3. Execute DNNs Under Test
 
 ```bash
 python src/predict.py --dataset COCO            # execute source test images
 python src/predict.py --dataset COCO --followup # execute follow-up test images
 ```
-This will run the DNN to make predications of the test images, and produce results as included in  `results/predictions/` directory.
+This will run the DNN to make predications of the test images, and produce results as included in the `results/predictions/` directory.
 
-##### 4. Evaluate Failure and Fault Revelation Capability
+#### 4. Evaluate Failure and Fault Revelation Capability
 
 ```bash
 python src/count_failure_fault.py --dataset COCO
 ```
-This will base on the prediction outputs to calculate the failures and faults, and produce the files as included in `results/errors/` directory.
+This will base on the prediction outputs to calculate the failure rate and fault type metrics, and produce the files as included in the `results/errors/` directory.
 
-##### 5. Calculate the ∆M Measure 
+#### 5. Feature Extraction
 
 ```bash
 python src/extract_features.py
 ```
 
-This will calculate the feature representation of each test image, and produce the results as included in `results/features/` directory.
+This will calculate the feature representation of each test image, and produce the results as included in the `results/features/` directory. The calculation of the ∆M measure and the correlation analysis is performed in `RQs.ipynb`.
 
-##### 6. Data Augmentation
+#### 6. Data Augmentation
 
 ```bash
 # train with data augmentation
@@ -188,6 +172,6 @@ python src/count_failure_fault.py --dataset COCO --cmr_num 50 --source_num 1000
 python src/count_failure_fault.py --dataset COCO --augment online --cmr_num 50 --source_num 1000
 ```
 
-The `--augment` parameter specifies the data augmentation method used. Here, `online` indicates the online (i.e., on-the-fly) data augmentation method based on CMRs. The `--cmr_num` and `--source_num` parameters specify the number of CMRs and source test images sampled for evaluating the augmented models, respectively. If `--source_num` set to `0`, all source test images will be used.
+This will first train the DNN using augmented dataset and save the checkpoints (with `Aug_online` suffix following the names of DNN) in the `models` directory. Then, it will randomly sample a subset of CMRs and source test images (producing files in `results/samples/`), use them to test the augmented version of DNN (producing files in `results/predictions/`), and evaluate the failure and fault revelation capability (producing files in `results/errors/`).
 
-This will train the DNN using augmented dataset and save the checkpoints (with `Aug_online` suffix following the names of DNN) as included in `models` directory. Then it will record indices of sampled CMRs and source images as included in `results/samples/` directory, followed by producing predication results and the failures and faults as included in `results/predictions/` and `results/errors/`, respectively.
+The `--augment` parameter specifies the data augmentation method used, with `online` indicating the online (i.e., on-the-fly) data augmentation method. The `--cmr_num` and `--source_num` parameters specify the number of CMRs and source test images sampled, respectively. If `--source_num` sets to `0`, all source test images will be used.

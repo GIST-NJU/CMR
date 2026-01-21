@@ -96,3 +96,4 @@ randaugment==1.0.2
 easydict==1.13
 insightface==0.7.3
 onnxruntime-gpu==1.15.1
+timm==0.6.13
